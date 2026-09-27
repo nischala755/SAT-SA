@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "SubmissionFile": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "maxLength": 2000000,
+          "title": "Content",
+          "type": "string"
+        },
+        "filename": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "mapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Mapping",
+          "type": "object"
+        },
+        "table": {
+          "enum": [
+            "cses",
+            "assets",
+            "alerts",
+            "cases",
+            "investigation_events",
+            "escalations"
+          ],
+          "title": "Table",
+          "type": "string"
+        }
+      },
+      "required": [
+        "table",
+        "filename",
+        "content"
+      ],
+      "title": "SubmissionFile",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "files": {
+      "items": {
+        "$ref": "#/$defs/SubmissionFile"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "title": "Files",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "files"
+  ],
+  "title": "Submission",
+  "type": "object"
+}

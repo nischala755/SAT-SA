@@ -1,0 +1,58 @@
+{
+  "$defs": {
+    "ReviewOutcome": {
+      "enum": [
+        "accepted",
+        "dismissed",
+        "explained",
+        "confirmed_concern",
+        "false_positive",
+        "insufficient_evidence",
+        "further_investigation"
+      ],
+      "title": "ReviewOutcome",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "note": {
+      "default": "",
+      "maxLength": 4000,
+      "title": "Note",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/ReviewOutcome"
+    },
+    "run_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "signal_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Signal Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "signal_id",
+    "cse_id",
+    "outcome"
+  ],
+  "title": "ReviewInput",
+  "type": "object"
+}

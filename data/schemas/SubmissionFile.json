@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "maxLength": 2000000,
+      "title": "Content",
+      "type": "string"
+    },
+    "filename": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Filename",
+      "type": "string"
+    },
+    "mapping": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Mapping",
+      "type": "object"
+    },
+    "table": {
+      "enum": [
+        "cses",
+        "assets",
+        "alerts",
+        "cases",
+        "investigation_events",
+        "escalations"
+      ],
+      "title": "Table",
+      "type": "string"
+    }
+  },
+  "required": [
+    "table",
+    "filename",
+    "content"
+  ],
+  "title": "SubmissionFile",
+  "type": "object"
+}

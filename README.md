@@ -1,6 +1,6 @@
 # SAT-SA
 
-**VISTA repository · Verified Phase 1 foundation**
+**VISTA repository · Local supervisory analytics prototype**
 
 [Quick start](#quick-start) · [Setup](#native-setup-windows-powershell) · [Architecture](#architecture-and-repository-map) · [Data](#synthetic-dataset) · [Qwen](#optional-local-qwen) · [Tests](#tests-and-verification) · [Troubleshooting](#troubleshooting) · [Documentation](#documentation-map)
 
@@ -71,21 +71,21 @@ These screenshots record the verification session; they are not live status indi
 | Seeded multi-entity synthetic dataset | Implemented |
 | Separate ground truth | Implemented; excluded from evidence table selection |
 | Docker and isolated core runtime verification | Verified with networking limits documented below |
-| Ingestion UI, analytics, evidence-gap detection and ranking | Future phases |
-| Dashboards, human review workflow and production authentication | Future phases |
-| Optional local Qwen evidence summaries | Proposed; design approval pending |
+| Ingestion UI, analytics, evidence-gap detection and ranking | Implemented |
+| Assessment views, human reviews, audit and configured bearer identities | Implemented; hardening limits apply |
+| Optional evidence-summary CLI | Qwen verified locally; Mistral adapter implemented, live request returned HTTP 429 |
 
 Supervisory Analytics Tool for SOC Assessment
 
 SAT-SA is intended to help NCIIPC supervisors examine periodic submitted SOC evidence. The product chain is submitted evidence → normalization → supervisory analytics → evidence gaps/anomalies → review prioritization → human examination → auditable supervisory decision.
 
-**Phase 1 only:** runnable application shell, live backend/storage status, canonical domain contracts, local DuckDB metadata/audit persistence, immutable Parquet evidence and a deterministic synthetic dataset. There is no ingestion wizard, analytical engine, dashboard, review ranking or decision workflow yet. No analytical results are fabricated.
+**Current scope:** CSV/JSON ingestion, deterministic indicators across eight signal families, explicit evidence gaps, peer/history comparisons, review prioritization, human decisions, validation and audit. Results are computed from evidence. The Phase 1 report is historical; see the [completion report](docs/completion-verification.md) for current verification and limitations.
 
 ## Requirements and architecture
 
 Authority: [problem statement](docs/problem-statement.md), [approved architecture](docs/architecture.md), [AGENTS.md](AGENTS.md), then [Phase 1 plan](docs/superpowers/plans/2026-09-27-phase-1.md). AGENTS.md is currently empty and has been preserved.
 
-Next.js/TypeScript serves the application shell and a same-origin status proxy. FastAPI/Pydantic owns the status API. Repository interfaces separate local DuckDB metadata from immutable Parquet evidence. Python analytics packages are boundaries for later implementation. One process owns metadata writes; stop the API before running a metadata-writing CLI.
+Next.js/TypeScript serves the application shell and a same-origin status proxy. FastAPI/Pydantic owns the status API. Repository interfaces separate local DuckDB metadata from immutable Parquet evidence. Python analytical modules implement versioned, explainable rules independently of the UI and optional AI. One process owns metadata writes; stop the API before running a metadata-writing CLI.
 
 ## Native setup (Windows PowerShell)
 
@@ -165,7 +165,7 @@ npm --prefix apps/web run test:e2e
 
 Browser tests default to locally installed Microsoft Edge. For another prepared Playwright browser, set `PLAYWRIGHT_CHANNEL=chromium` and install its browser binary during dependency preparation, not at offline runtime. Set `SAT_SA_WEB_URL` to test a different application address.
 
-The [verification report](docs/phase-1-verification.md) contains actual command results and acceptance gaps. No precision, recall or ranking effectiveness is claimed before analytics exist.
+The [verification report](docs/phase-1-verification.md) contains actual command results and acceptance gaps. Synthetic benchmark metrics are reported separately from manual-review outcomes and do not establish real-world effectiveness.
 
 ## Docker and air-gapped deployment
 
@@ -197,9 +197,9 @@ See [deployment details](docs/deployment.md) for storage, boundaries and verific
 
 ## Configuration and limits
 
-`SAT_SA_STORAGE_ROOT` selects local storage; `SAT_SA_DEMO_SEED` selects the deterministic seed before initial generation. `SAT_SA_DEMO_MODE` must be true in Phase 1: non-demo mode fails closed because production authentication is not implemented. No login credentials are required for the local synthetic demonstration. Never use Phase 1 with real restricted SOC submissions or expose it beyond the controlled host.
+`SAT_SA_STORAGE_ROOT` selects local storage; `SAT_SA_DEMO_SEED` selects the deterministic seed before initial generation. `SAT_SA_DEMO_MODE=false` requires configured `SAT_SA_AUTH_TOKENS`; missing authentication configuration fails closed. No login credentials are required for the local synthetic demonstration. This prototype is not security-accredited for restricted submissions. Keep the demonstration on a controlled host.
 
-`config/defaults.json` contains documented future analytical configuration. No configured threshold is executed in this phase. See [data dictionary](docs/data-dictionary.md), [methodology boundaries](docs/analytics-methodology.md) and [validation methodology](docs/validation-methodology.md).
+`config/defaults.json` contains documented future analytical configuration. Active rules use validated `config/engine.json`; `config/defaults.json` retains the original foundation configuration. See [data dictionary](docs/data-dictionary.md), [methodology boundaries](docs/analytics-methodology.md) and [validation methodology](docs/validation-methodology.md).
 
 The synthetic generator builds a bounded demonstration dataset in memory. This is not a tested million-record importer. The evidence reader applies entity filters and pagination in DuckDB; later ingestion needs streaming/chunking. Filesystem administrators can modify local files; hashes detect altered artifacts during verification/bootstrap but are not cryptographic signing or tamper-proof audit storage. Encryption at rest is a deployment-managed encrypted-volume responsibility.
 
@@ -219,7 +219,7 @@ flowchart LR
     Types --> Web
 ```
 
-The approved product flow below describes the intended system, not a claim that every stage is delivered:
+The supervisory reasoning chain is:
 
 ```mermaid
 flowchart TD
@@ -263,10 +263,10 @@ compose.offline.yaml        Internal-network verification override
 | InvestigationEvent | Timestamped action and source provenance |
 | EscalationRecord | Explicit escalation linked to an alert/case |
 | DatasetVersion | Immutable hashes, counts and schema/generator versions |
-| AnalyticsRun | Future execution provenance; no runs produced yet |
-| SupervisorySignal | Future evidence-backed indicator; none fabricated |
+| AnalyticsRun | Persisted execution provenance, configuration and hashes |
+| SupervisorySignal | Calculated evidence-backed review indicator |
 | EvidenceReference | Dataset/entity/type/record identity and provenance |
-| ReviewDecision | Future human decision contract; no generated decisions |
+| ReviewDecision | Human-authored decision; never generated by analytics |
 | AuditEvent | Persisted registration/action history |
 
 Unknown fields, naive timestamps, reversed lifecycles and invalid negative counts fail validation. Missing optional evidence remains null. Entity-scoped references cannot be satisfied by an identically named record in another CSE. Missing escalation evidence is not proof that escalation never occurred.
@@ -276,7 +276,10 @@ Unknown fields, naive timestamps, reversed lifecycles and invalid negative count
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `SAT_SA_STORAGE_ROOT` | `runtime` | Local data root; Compose uses `/var/lib/sat-sa` |
-| `SAT_SA_DEMO_MODE` | `true` | Non-demo mode fails closed |
+| `SAT_SA_DEMO_MODE` | `true` | Non-demo requires configured bearer identities |
+| `SAT_SA_AUTH_TOKENS` | `{}` | JSON map from secret tokens to server-owned actor/role |
+| `SAT_SA_DEMO_ROLE` | `examiner` | Server-owned demo role |
+| `SAT_SA_INTERNAL_EXPORT_URL` | Unset | Configured private-IP export; disabled by default |
 | `SAT_SA_DEMO_SEED` | `20260927` | First-generation seed; cannot overwrite existing evidence |
 | `SAT_SA_API_URL` | `http://127.0.0.1:8000` | Frontend's server-side API URL; Compose uses `http://api:8000` |
 | `NEXT_TELEMETRY_DISABLED` | Set by launch scripts | Disables Next.js telemetry |
@@ -303,27 +306,22 @@ In another terminal at the repository root, run `npm --prefix apps/web run dev`.
 
 </details>
 
-## Optional local Qwen
+## Optional local Qwen and Mistral summaries
 
-**Status: proposed extension, not implemented or covered by Phase 1 verification.** The selected purpose is local evidence-summary drafting for human review. The [design](docs/local-qwen-design.md) describes a bounded command, source references, label exclusion, visible errors and no writes to signals or decisions. Application startup remains independent of AI.
-
-No Mistral adapter, cloud fallback or API key is configured.
+AI is an optional **command-line drafting aid**, separate from analytics and decisions. It selects at most 10 records from one immutable dataset/CSE, verifies artifacts and includes source records/references and input/dataset hashes. Drafts are untrusted text requiring human review. Labels are never included. No automatic fallback or model download occurs.
 
 <details>
-<summary><strong>Prepare the local model</strong></summary>
+<summary><strong>Local Qwen through Ollama</strong></summary>
 
-Install [Ollama](https://ollama.com/download). Model acquisition is a dependency-preparation step requiring connectivity unless transferred through an approved offline process.
+The tested host uses Ollama `0.34.4` with `qwen3.5:2b` already installed. Prepare dependencies before disconnecting:
 
 ```powershell
-ollama --version
 ollama list
-# Only when the model is absent, during dependency preparation:
+# Preparation only, when the model is absent:
 ollama pull qwen3.5:2b
 ```
 
-The development host has Ollama `0.34.4` and `qwen3.5:2b`, approximately 2.7 GB on disk. Disk size is not a RAM/VRAM requirement or a performance guarantee.
-
-For a dedicated local service:
+For a dedicated service, or configure/restart the existing desktop service with these settings:
 
 ```powershell
 $env:OLLAMA_NO_CLOUD = '1'
@@ -331,11 +329,36 @@ $env:OLLAMA_HOST = '127.0.0.1:11434'
 ollama serve
 ```
 
-If the desktop service already owns the port, configure/restart that service instead of starting another. Model presence alone does not establish offline isolation. AI inference must be tested separately under blocked egress before claiming offline readiness.
+From the repository root:
 
-References: [Ollama chat API](https://docs.ollama.com/api/chat) and [server/cloud configuration](https://docs.ollama.com/faq). The proposed adapter uses non-streamed generation, bounded context and no tools; these controls are not yet implemented in this repository.
+```powershell
+.venv\Scripts\python scripts/summarize_evidence.py --cse CSE-01 --table alerts --limit 3
+```
+
+The adapter uses loopback only, disables proxies/redirects, and bounds context, output and timeout. A real local generation succeeded. **Qwen inference with enforced host egress denial has not been verified**; core container offline verification is separate. Model disk size is not a RAM requirement.
 
 </details>
+
+<details>
+<summary><strong>Mistral — explicit optional Internet exception</strong></summary>
+
+Mistral is disabled unless selected with `--provider mistral --allow-cloud`. This sends the selected evidence to Mistral. It never generates analytical signals, priorities or decisions. Use only synthetic or explicitly approved evidence.
+
+Configure a valid key in the invoking shell without putting its value in command history:
+
+```powershell
+$credential = Get-Credential -UserName 'mistral' -Message 'Enter API key in password field'
+$env:MISTRAL_API_KEY = $credential.GetNetworkCredential().Password
+$env:SAT_SA_MISTRAL_MODEL = 'mistral-small-latest'
+.venv\Scripts\python scripts/summarize_evidence.py --cse CSE-01 --limit 1 --provider mistral --allow-cloud
+Remove-Item Env:MISTRAL_API_KEY
+```
+
+The supplied key was used transiently for verification and was not stored in the repository. The provider returned **HTTP 429**; successful live Mistral generation remains unverified. Resolve quota/rate limits before retrying. Rotate any key exposed in chat. `.env.example` contains names only; scripts do not automatically load it.
+
+</details>
+
+Sources: [Ollama chat API](https://docs.ollama.com/api/chat), [Ollama server configuration](https://docs.ollama.com/faq), [Mistral chat API](https://docs.mistral.ai/api/endpoint/chat). See the summary design and architecture addendum for the authorized exception.
 
 ## Recorded verification results
 
@@ -429,4 +452,35 @@ Tests default to installed Microsoft Edge. Prepare a supported browser before di
 
 Keep changes traceable to the requirements and architecture. Preserve entity-scoped references, immutability, missingness, label separation and generated-contract freshness. Add meaningful regression tests for behavior changes and report architectural deviations explicitly.
 
-Phase 2 has not begun. The separate Qwen request does not authorize a full analytics engine or decision workflow. Production authentication and ingestion are absent; use synthetic data on a controlled local host. No software license has been added; public repository visibility alone does not grant a license.
+The user authorized phases 2–10 after Phase 1. See the completion report for implemented workflows, tested boundaries and limitations. Use synthetic data on a controlled local host. No software license has been added; public repository visibility alone does not grant a license.
+
+
+## Demonstrate the supervisory workflow
+
+1. Start Compose. The first demo startup computes a real analytical run in the background.
+2. Select an assessment run to keep its immutable dataset, configuration and period in context.
+3. Open **CSE-01**, inspect **High-severity alerts closed unusually quickly**, then open a source record.
+4. Compare observations, calculation, peer/history context and the supervisory hypothesis separately.
+5. Open **Negative space** for expected/observed/gap evidence. Alert absence does not prove monitoring failure.
+6. Open **Review queue** for deduplicated samples and additive priority contributions.
+7. Record a human outcome and note. **Audit trail** records actor, time and run. Confirmed concern is a human action only.
+8. Open **Validation** for benchmark denominators and separate human-review outcomes.
+9. Use **Data ingestion** to upload exports, map columns, preview validation and publish an immutable version. Select it and run analytics.
+
+### Authentication boundary
+
+Default demo identity is `local-demo-examiner`; no password is needed for synthetic local use. Roles are enforced on the API; browser-supplied role/actor fields are rejected. For non-demo operation set `SAT_SA_DEMO_MODE=false` and `SAT_SA_AUTH_TOKENS` to a locally supplied JSON map of secret tokens to `{ "actor": "name", "role": "reader|examiner|administrator" }`. The frontend keeps entered tokens in page memory only. This is a prototype boundary, not SSO, MFA or security accreditation. Use deployment-managed TLS/access controls beyond loopback.
+
+### Database and internal REST exports
+
+Database exports use the CSV/JSON contracts. `POST /api/v1/ingestion/internal` requires an administrator and configured `SAT_SA_INTERNAL_EXPORT_URL` with a literal private IP. Redirects, proxies, public hostnames and link-local metadata endpoints are rejected. The source must return `{ "files": [...] }` using the submission contract. It is disabled by default and accepts no caller-supplied URL.
+
+### Prototype limits
+
+- Uploads: 2 MB per file, 12 files, 10,000 rows; all-or-nothing validation.
+- Analytics: at most 100,000 input records. The bounded in-memory orchestrator is **not million-record readiness**. Larger workloads require streaming/SQL aggregation and measured benchmarks.
+- Metadata: one process/worker; no distributed job service or PostgreSQL implementation.
+- Drafts are not certified as complete, factually correct or deterministic. Model text cannot automatically become a signal or decision.
+- Filesystem administrators can change local files. Hashes detect changed artifacts; storage is not signed or tamper-proof.
+- Raw imports, evidence and registration span filesystem/database boundaries. A crash may leave raw files or an unregistered immutable directory; neither is silently overwritten.
+- Synthetic metrics characterize this generator/rule set, not actual SOC effectiveness. False positives remain visible.

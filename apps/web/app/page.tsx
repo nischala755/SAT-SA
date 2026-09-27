@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { StatusResult } from "../lib/status";
+import Workbench from './components/workbench';
 
 export default function Home() {
   const [result, setResult] = useState<StatusResult | null>(null);
@@ -21,9 +22,9 @@ export default function Home() {
   return <>
     <header><div className="brand"><h1>SAT-SA</h1><p>Supervisory Analytics Tool for SOC Assessment</p></div><span className="badge">Local synthetic demonstration</span></header>
     <main>
-      <p className="eyebrow">PHASE 1 · FOUNDATION</p>
+      <p className="eyebrow">EVIDENCE-LED SUPERVISORY EXAMINATION</p>
       <h2>System status</h2>
-      <p className="intro">A local foundation for examining submitted SOC evidence. Analytical indicators and supervisory review workflows are not implemented in this phase.</p>
+      <p className="intro">Submitted evidence, explainable review indicators and human supervisory decisions. All analytical results are computed from the selected dataset.</p>
       <section aria-labelledby="connection-heading" className="panel">
         <div className="panel-heading"><h3 id="connection-heading">Application connection</h3><button onClick={() => void refresh()} disabled={checking}>{checking ? "Checking…" : result?.ok ? "Refresh status" : "Retry connection"}</button></div>
         <div aria-live="polite" aria-busy={checking}>
@@ -33,9 +34,9 @@ export default function Home() {
           </> : <p role="alert" className="error">{result?.message ?? "Backend unavailable."}</p>}
         </div>
       </section>
-      <section className="scope" aria-labelledby="scope-heading"><h3 id="scope-heading">Available in this foundation</h3><ul><li>Typed evidence contracts and configuration</li><li>Local metadata and audit persistence</li><li>Seeded synthetic evidence stored as Parquet</li><li>Ground-truth labels kept separately for later validation</li></ul></section>
+      {result?.ok && <Workbench/>}
       <p className="notice">Analytics will identify indicators for human examination. They will not make automatic supervisory findings.</p>
     </main>
-    <footer>Phase 1 prototype · Demo identity: local examiner · Synthetic data only</footer>
+    <footer>SAT-SA prototype · Local demonstration · Indicators require human examination</footer>
   </>;
 }

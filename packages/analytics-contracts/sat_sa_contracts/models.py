@@ -245,3 +245,43 @@ RECORD_MODELS = {"cses": CSE, "alerts": Alert, "cases": Case, "assets": Asset,
                  "investigation_events": InvestigationEvent, "escalations": EscalationRecord}
 RECORD_KEYS = {"cses": "cse_id", "alerts": "alert_id", "cases": "case_id", "assets": "asset_id",
                "investigation_events": "event_id", "escalations": "escalation_id"}
+
+
+class SubmissionFile(Contract):
+    table: Literal['cses','assets','alerts','cases','investigation_events','escalations']
+    filename: Annotated[str,Field(min_length=1,max_length=120)]
+    content: Annotated[str,Field(max_length=2000000)]
+    mapping: dict[str,str] = Field(default_factory=dict)
+
+
+class Submission(Contract):
+    dataset_id: Identifier
+    files: Annotated[list[SubmissionFile],Field(min_length=1,max_length=12)]
+
+
+class RunRequest(Contract):
+    dataset_id: Identifier
+
+
+class ReviewInput(Contract):
+    run_id: Identifier
+    signal_id: Identifier
+    cse_id: Identifier
+    outcome: ReviewOutcome
+    note: Annotated[str,Field(max_length=4000)] = ''
+
+
+class PageResult(Contract):
+    items: list[dict[str,Any]]
+    total: Count
+    offset: Count
+    limit: Count
+
+
+class JobResult(Contract):
+    job_id: Identifier
+    kind: Literal['ingestion','analytics']
+    status: Literal['queued','running','completed','failed']
+    dataset_id: Identifier
+    error: str | None = None
+    run_id: str | None = None

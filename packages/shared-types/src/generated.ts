@@ -174,6 +174,22 @@ export type InvestigationEvent = {
   timestamp: string;
 };
 
+export type JobResult = {
+  dataset_id: string;
+  error?: string | null;
+  job_id: string;
+  kind: "ingestion" | "analytics";
+  run_id?: string | null;
+  status: "queued" | "running" | "completed" | "failed";
+};
+
+export type PageResult = {
+  items: ReadonlyArray<Record<string, unknown>>;
+  limit: number;
+  offset: number;
+  total: number;
+};
+
 export type Provenance = {
   ingestion_batch: string;
   source_file: string;
@@ -192,11 +208,35 @@ export type ReviewDecision = {
   timestamp: string;
 };
 
+export type ReviewInput = {
+  cse_id: string;
+  note?: string;
+  outcome: ReviewOutcome;
+  run_id: string;
+  signal_id: string;
+};
+
 export type ReviewOutcome = "accepted" | "dismissed" | "explained" | "confirmed_concern" | "false_positive" | "insufficient_evidence" | "further_investigation";
 
 export type Role = "reader" | "examiner" | "administrator";
 
+export type RunRequest = {
+  dataset_id: string;
+};
+
 export type Severity = "critical" | "high" | "medium" | "low" | "informational";
+
+export type Submission = {
+  dataset_id: string;
+  files: ReadonlyArray<SubmissionFile>;
+};
+
+export type SubmissionFile = {
+  content: string;
+  filename: string;
+  mapping?: Record<string, string>;
+  table: "cses" | "assets" | "alerts" | "cases" | "investigation_events" | "escalations";
+};
 
 export type SupervisorySignal = {
   calculation_version: string;

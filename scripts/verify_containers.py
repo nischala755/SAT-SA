@@ -46,11 +46,11 @@ assert all(r['blocked'] for r in results), 'External egress unexpectedly availab
     node_probe = """const net=require('node:net'); Promise.all(['1.1.1.1','8.8.8.8'].map(host=>new Promise(resolve=>{const s=net.connect({host,port:443});s.setTimeout(2000);s.once('connect',()=>{s.destroy();resolve({host,blocked:false})});s.once('error',e=>resolve({host,blocked:true,reason:e.code}));s.once('timeout',()=>{s.destroy();resolve({host,blocked:true,reason:'timeout'})})}))).then(results=>{console.log(JSON.stringify(results));process.exit(results.every(r=>r.blocked)?0:1)})"""
     snapshot_code = """import json
 from pathlib import Path
-from sat_sa.repositories.duckdb_metadata import DuckDBMetadataRepository
+from sat_sa.repositories.workflow import WorkflowRepository
 from sat_sa.repositories.parquet_evidence import ParquetEvidenceRepository
-with DuckDBMetadataRepository(Path('/var/lib/sat-sa/metadata.duckdb')) as r:
+with WorkflowRepository(Path('/var/lib/sat-sa/metadata.duckdb')) as r:
  r.initialize()
- print(json.dumps({'dataset':r.get_dataset('demo').model_dump(mode='json'),'audit':[a.model_dump(mode='json') for a in r.list_audit()],'verified_manifest':ParquetEvidenceRepository(Path('/var/lib/sat-sa/evidence')).load_manifest('demo').model_dump(mode='json')}))
+ print(json.dumps({'dataset':r.get_dataset('demo').model_dump(mode='json'),'audit':[a.model_dump(mode='json') for a in r.list_audit()],'runs':r.runs(),'reviews':r.decisions(),'verified_manifest':ParquetEvidenceRepository(Path('/var/lib/sat-sa/evidence')).load_manifest('demo').model_dump(mode='json')}))
 """
     snapshot_cmd = ["docker", "compose", "run", "--rm", "--no-deps", "--entrypoint", "python", "api", "-c", snapshot_code]
     command(["docker", "compose", "stop", "api"])
@@ -72,7 +72,7 @@ with DuckDBMetadataRepository(Path('/var/lib/sat-sa/metadata.duckdb')) as r:
     finally:
         command(["docker", "compose", "up", "--pull", "never", "--no-build", "--wait"])
     assert snapshot_before == snapshot_after, "Evidence or audit changed across restart"
-    assert len(snapshot_after["audit"]) == 1
+    assert sum(a['action']=='dataset_registered' for a in snapshot_after['audit']) == 1
     isolated = ["docker", "compose", "-f", "compose.yaml", "-f", "compose.offline.yaml"]
     try:
         command(isolated + ["up", "--pull", "never", "--no-build", "--wait"])
@@ -93,7 +93,19 @@ for(const asset of assets){
 }
 const health=await (await fetch(base+'/api/status')).json();
 if(!health.ok || health.health.registered_datasets!==1) throw Error('Backend unavailable');
-console.log(JSON.stringify({shell:true,assets:assets.length,frontend_backend:true,health}));
+const call=async(path,body)=>{const r=await fetch(base+'/api/service/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const value=await r.json();if(!r.ok)throw Error(JSON.stringify(value));return value;};
+let job=await call('analytics/run',{dataset_id:'demo'});
+for(let i=0;i<120 && ['queued','running'].includes(job.status);i++){await new Promise(r=>setTimeout(r,500));job=await call('jobs/'+job.job_id);}
+if(job.status!=='completed')throw Error('Offline analytics failed: '+JSON.stringify(job));
+const signals=await call('signals?run_id='+job.run_id);
+if(!signals.total)throw Error('No computed indicators');
+const signal=await call('signals/'+signals.items[0].signal_id+'?run_id='+job.run_id);
+const ref=signal.evidence_references[0];
+const evidence=await call('evidence?'+new URLSearchParams({dataset_id:ref.dataset_id,cse_id:ref.cse_id,table:ref.record_type,record_id:ref.record_id}));
+if(evidence.total!==1)throw Error('Source trace failed');
+await call('reviews',{run_id:job.run_id,signal_id:signal.signal_id,cse_id:signal.cse_id,outcome:'further_investigation',note:'Isolated-network verification on synthetic evidence'});
+const audit=await call('audit');if(!audit.items.some(e=>e.action==='review_recorded'))throw Error('Review audit absent');
+console.log(JSON.stringify({shell:true,assets:assets.length,frontend_backend:true,health,offline_analytics:true,evidence_trace:true,human_review:true,run_id:job.run_id}));
 })().catch(e=>{console.error(e);process.exit(1)})"""
         offline_http = json.loads(command(isolated + ["exec", "-T", "web", "node", "-e", http_probe]))
     finally:

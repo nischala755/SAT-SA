@@ -12,10 +12,16 @@ class Settings(Contract):
     storage_root: Path = Path("runtime")
     demo_mode: bool = True
     demo_seed: Count = 20260927
+    demo_role: Literal['reader','examiner','administrator'] = 'examiner'
+    auth_tokens: dict[str,dict[str,str]] = Field(default_factory=dict,repr=False)
+    internal_export_url: str | None = None
 
     @model_validator(mode="after")
     def demo_only(self):
-        if not self.demo_mode:
+        if self.internal_export_url:
+            from sat_sa.ingestion.internal import validate_endpoint
+            validate_endpoint(self.internal_export_url)
+        if not self.demo_mode and not self.auth_tokens:
             raise ValueError("Production authentication is not implemented in Phase 1; demo_mode must be true")
         return self
 
@@ -39,6 +45,8 @@ def load_settings(path: Path | None = None) -> Settings:
         if value is not None:
             if field == "demo_seed":
                 value = int(value)
+            if field == 'auth_tokens':
+                value = json.loads(value)
             values[field] = value
     return Settings.model_validate(values)
 

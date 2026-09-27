@@ -1,0 +1,17 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Dataset Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "dataset_id"
+  ],
+  "title": "RunRequest",
+  "type": "object"
+}

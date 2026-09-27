@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "minimum_sample": 10,
+  "minimum_peers": 3,
+  "fast_minutes": 15,
+  "short_investigation_minutes": 15,
+  "minimum_investigation_events": 2,
+  "recurrence_days": 30,
+  "recurrence_count": 4,
+  "burst_count": 5,
+  "concentration_ratio": 0.8,
+  "long_case_days": 30,
+  "low_activity_ratio": 0.25,
+  "peer_deviation_multiplier": 3,
+  "missingness_ratio": 0.2,
+  "expected_categories": ["endpoint", "identity", "network"],
+  "expected_escalation_severities": ["critical", "high"],
+  "metric_integrity_enabled": true
+}

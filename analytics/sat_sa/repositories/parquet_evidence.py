@@ -48,7 +48,7 @@ class ParquetEvidenceRepository:
             raise ValueError("Dataset must be directly within evidence root")
         return target
 
-    def write_dataset(self, records: dict, destination: Path, *, seed: int) -> DatasetManifest:
+    def write_dataset(self, records: dict, destination: Path, *, seed: int | None, generator_version: str | None = '1.0.0') -> DatasetManifest:
         destination = destination.resolve()
         if destination != self._dataset_path(destination.name):
             raise ValueError("Destination outside evidence root")
@@ -70,7 +70,7 @@ class ParquetEvidenceRepository:
                     artifacts.append(Artifact(filename=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest(), row_count=table.num_rows))
                 digest = hashlib.sha256(canonical_json([a.model_dump() for a in artifacts])).hexdigest()
                 periods = [c.assessment_period for c in records["cses"]]
-                manifest = DatasetManifest(dataset_id=destination.name, dataset_hash=digest, schema_version="1.0.0", generator_version="1.0.0", seed=seed, created_at=max(p.end for p in periods), assessment_period={"start": min(p.start for p in periods), "end": max(p.end for p in periods)}, artifacts=tuple(artifacts))
+                manifest = DatasetManifest(dataset_id=destination.name, dataset_hash=digest, schema_version="1.0.0", generator_version=generator_version, seed=seed, created_at=max(p.end for p in periods), assessment_period={"start": min(p.start for p in periods), "end": max(p.end for p in periods)}, artifacts=tuple(artifacts))
                 (staging / "manifest.json").write_bytes(canonical_json(manifest.model_dump(mode="json")))
                 if destination.exists():
                     raise FileExistsError("Dataset versions are immutable")
@@ -107,3 +107,16 @@ class ParquetEvidenceRepository:
             result = con.execute(f'SELECT * FROM read_parquet(?) WHERE cse_id = ? ORDER BY "{RECORD_KEYS[record_type]}" LIMIT ? OFFSET ?', [str(path), cse_id, limit, offset])
             names = [col[0] for col in result.description]
             return [RECORD_MODELS[record_type].model_validate(dict(zip(names, row))) for row in result.fetchall()]
+
+    def query_records(self,dataset_id,record_type,cse_id,*,record_id=None,limit=50,offset=0):
+        if record_type not in RECORD_MODELS or not 1<=limit<=100 or offset<0: raise ValueError('Invalid evidence query')
+        path=self._dataset_path(dataset_id)/f'{record_type}.parquet'
+        key=RECORD_KEYS[record_type]
+        predicate='cse_id = ?'; params=[str(path),cse_id]
+        if record_id is not None:
+            predicate+=f' AND "{key}" = ?'; params.append(record_id)
+        with duckdb.connect(config={'autoinstall_known_extensions':'false','autoload_known_extensions':'false'}) as con:
+            total=con.execute(f'SELECT COUNT(*) FROM read_parquet(?) WHERE {predicate}',params).fetchone()[0]
+            cursor=con.execute(f'SELECT * FROM read_parquet(?) WHERE {predicate} ORDER BY "{key}" LIMIT ? OFFSET ?',params+[limit,offset])
+            names=[c[0] for c in cursor.description]
+            return [RECORD_MODELS[record_type].model_validate(dict(zip(names,row))) for row in cursor.fetchall()],total
