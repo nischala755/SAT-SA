@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.next/
+node_modules/
+*.tsbuildinfo
+.env
+runtime/
+.superpowers/
+artifacts/
+playwright-report/
+test-results/

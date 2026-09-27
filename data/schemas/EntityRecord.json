@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "ingestion_batch": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ingestion Batch",
+          "type": "string"
+        },
+        "source_file": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source File",
+          "type": "string"
+        },
+        "source_record": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source Record",
+          "type": "string"
+        },
+        "transformation_version": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Transformation Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_file",
+        "source_record",
+        "ingestion_batch",
+        "transformation_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    }
+  },
+  "required": [
+    "cse_id",
+    "provenance"
+  ],
+  "title": "EntityRecord",
+  "type": "object"
+}

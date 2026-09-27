@@ -1,0 +1,50 @@
+{
+  "internal_network": true,
+  "api_external_probes": [
+    {
+      "host": "1.1.1.1",
+      "blocked": true,
+      "reason": "OSError"
+    },
+    {
+      "host": "8.8.8.8",
+      "blocked": true,
+      "reason": "OSError"
+    }
+  ],
+  "web_external_probes": [
+    {
+      "host": "1.1.1.1",
+      "blocked": true,
+      "reason": "ENETUNREACH"
+    },
+    {
+      "host": "8.8.8.8",
+      "blocked": true,
+      "reason": "ENETUNREACH"
+    }
+  ],
+  "offline_http_and_assets": {
+    "shell": true,
+    "assets": 8,
+    "frontend_backend": true,
+    "health": {
+      "ok": true,
+      "health": {
+        "status": "ok",
+        "service": "sat-sa-api",
+        "software_version": "0.1.0",
+        "demo_mode": true,
+        "storage_ready": true,
+        "registered_datasets": 1,
+        "message": "Local metadata storage ready"
+      }
+    }
+  },
+  "default_compose_enforces_egress": false,
+  "connectivity_after_denied_egress": "passed",
+  "real_backend_outage_ui": "passed",
+  "restart_persistence": "passed",
+  "audit_events_after_restart": 1,
+  "dataset_hash": "7501d21aeddf23e29bbb6dd3971ac46798db3274b8863797aa4d502f527f50b8"
+}

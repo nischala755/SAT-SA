@@ -1,0 +1,6 @@
+# Verification override: Docker Desktop does not publish host ports on an
+# internal-only network. Verify HTTP from inside the containers in this mode.
+networks:
+  local:
+    name: sat-sa-offline-verification
+    internal: true

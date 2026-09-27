@@ -1,0 +1,43 @@
+name: sat-sa
+services:
+  api:
+    image: sat-sa-api:phase1
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      SAT_SA_STORAGE_ROOT: /var/lib/sat-sa
+      SAT_SA_DEMO_MODE: "true"
+      SAT_SA_DEMO_SEED: "20260927"
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - sat-sa-data:/var/lib/sat-sa
+    networks: [local]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  web:
+    image: sat-sa-web:phase1
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    environment:
+      SAT_SA_API_URL: http://api:8000
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [local]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+networks:
+  local:
+    internal: false
+volumes:
+  sat-sa-data:

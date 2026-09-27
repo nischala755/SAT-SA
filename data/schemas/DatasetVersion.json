@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "Artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "pattern": "^[a-z_]+\\.parquet$",
+          "title": "Filename",
+          "type": "string"
+        },
+        "row_count": {
+          "minimum": 0,
+          "title": "Row Count",
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename",
+        "sha256",
+        "row_count"
+      ],
+      "title": "Artifact",
+      "type": "object"
+    },
+    "AssessmentPeriod": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "AssessmentPeriod",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/Artifact"
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "assessment_period": {
+      "$ref": "#/$defs/AssessmentPeriod"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "dataset_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dataset Hash",
+      "type": "string"
+    },
+    "dataset_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "generator_version": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generator Version"
+    },
+    "schema_version": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Seed"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "dataset_hash",
+    "schema_version",
+    "created_at",
+    "assessment_period",
+    "artifacts"
+  ],
+  "title": "DatasetVersion",
+  "type": "object"
+}

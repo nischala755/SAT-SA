@@ -1,0 +1,258 @@
+{
+  "$defs": {
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "ingestion_batch": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ingestion Batch",
+          "type": "string"
+        },
+        "source_file": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source File",
+          "type": "string"
+        },
+        "source_record": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source Record",
+          "type": "string"
+        },
+        "transformation_version": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Transformation Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_file",
+        "source_record",
+        "ingestion_batch",
+        "transformation_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acknowledgement_timestamp": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Acknowledgement Timestamp"
+    },
+    "alert_category": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Alert Category",
+      "type": "string"
+    },
+    "alert_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Alert Id",
+      "type": "string"
+    },
+    "asset_criticality": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Severity"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "asset_id": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asset Id"
+    },
+    "case_id": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Case Id"
+    },
+    "closure_reason": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closure Reason"
+    },
+    "closure_timestamp": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closure Timestamp"
+    },
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "disposition": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Disposition"
+    },
+    "escalation_required": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Escalation Required"
+    },
+    "escalation_timestamp": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Escalation Timestamp"
+    },
+    "escalation_type": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Escalation Type"
+    },
+    "investigation_start_timestamp": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Investigation Start Timestamp"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "rule_use_case": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Rule Use Case",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity"
+    },
+    "source": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Source",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "cse_id",
+    "provenance",
+    "alert_id",
+    "timestamp",
+    "severity",
+    "source",
+    "alert_category",
+    "rule_use_case"
+  ],
+  "title": "Alert",
+  "type": "object"
+}

@@ -1,0 +1,249 @@
+{
+  "$defs": {
+    "EvidenceReference": {
+      "additionalProperties": false,
+      "properties": {
+        "cse_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Cse Id",
+          "type": "string"
+        },
+        "dataset_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "record_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "record_type": {
+          "enum": [
+            "cses",
+            "alerts",
+            "cases",
+            "assets",
+            "investigation_events",
+            "escalations"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "cse_id",
+        "record_type",
+        "record_id",
+        "provenance"
+      ],
+      "title": "EvidenceReference",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "ingestion_batch": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ingestion Batch",
+          "type": "string"
+        },
+        "source_file": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source File",
+          "type": "string"
+        },
+        "source_record": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source Record",
+          "type": "string"
+        },
+        "transformation_version": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Transformation Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_file",
+        "source_record",
+        "ingestion_batch",
+        "transformation_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "informational"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "calculation_version": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Calculation Version",
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "detection",
+        "investigation",
+        "escalation",
+        "incident_response",
+        "security_operations",
+        "governance",
+        "operational_discipline",
+        "cyber_resilience"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "confidence": {
+      "enum": [
+        "limited",
+        "medium",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "data_completeness": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Data Completeness",
+      "type": "number"
+    },
+    "description": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "evidence_count": {
+      "minimum": 0,
+      "title": "Evidence Count",
+      "type": "integer"
+    },
+    "evidence_references": {
+      "items": {
+        "$ref": "#/$defs/EvidenceReference"
+      },
+      "title": "Evidence References",
+      "type": "array"
+    },
+    "inferred_signal": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Inferred Signal",
+      "type": "string"
+    },
+    "methodology": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Methodology",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "observed_evidence": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Observed Evidence",
+      "type": "string"
+    },
+    "run_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity"
+    },
+    "signal_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Signal Id",
+      "type": "string"
+    },
+    "signal_strength": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "Signal Strength",
+      "type": "string"
+    },
+    "supervisory_hypothesis": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Supervisory Hypothesis",
+      "type": "string"
+    },
+    "thresholds": {
+      "additionalProperties": true,
+      "title": "Thresholds",
+      "type": "object"
+    }
+  },
+  "required": [
+    "signal_id",
+    "run_id",
+    "cse_id",
+    "name",
+    "category",
+    "description",
+    "severity",
+    "signal_strength",
+    "confidence",
+    "data_completeness",
+    "evidence_count",
+    "methodology",
+    "thresholds",
+    "observed_evidence",
+    "inferred_signal",
+    "supervisory_hypothesis",
+    "evidence_references",
+    "calculation_version"
+  ],
+  "title": "SupervisorySignal",
+  "type": "object"
+}

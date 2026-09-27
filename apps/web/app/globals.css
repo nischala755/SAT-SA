@@ -1,0 +1,27 @@
+:root { color-scheme: light; font-family: Arial, Helvetica, sans-serif; color: #243449; background: #f5f7fa; }
+* { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; }
+header { background: #fff; border-bottom: 1px solid #d6dfe8; padding: 22px 5%; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+h1 { font-size: 23px; letter-spacing: .04em; margin: 0; color: #173754; }
+.brand p { font-size: 13px; margin: 2px 0 0; color: #52647a; }
+.badge { font-size: 12px; border: 1px solid #c6d3df; border-radius: 3px; padding: 5px 9px; white-space: nowrap; }
+main { max-width: 970px; margin: 38px auto 60px; padding: 0 24px; }
+.eyebrow { font-size: 12px; letter-spacing: .09em; color: #516982; margin-bottom: 6px; }
+h2 { font-size: 27px; font-weight: 600; margin: 0; }
+h3 { font-size: 16px; margin: 0; font-weight: 600; }
+.intro { max-width: 770px; color: #52647a; margin: 12px 0 24px; }
+.panel { background: #fff; border: 1px solid #d6dfe8; border-radius: 5px; padding: 22px; }
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #e2e8ef; padding-bottom: 15px; margin-bottom: 17px; }
+button { font: inherit; font-size: 13px; padding: 7px 12px; background: #fff; color: #204a70; border: 1px solid #a8b9ca; border-radius: 4px; cursor: pointer; }
+button:hover { background: #edf3f8; }
+button:focus-visible { outline: 3px solid #416e9b; outline-offset: 3px; }
+button:disabled { opacity: .6; cursor: wait; }
+.connected { font-weight: 600; color: #27634b; margin: 0 0 12px; }
+dl { margin: 0; }
+dl div { display: grid; grid-template-columns: 190px 1fr; padding: 7px 0; }
+dt { color: #56667a; } dd { margin: 0; }
+.error { color: #8a3e22; background: #fff5ee; padding: 12px; border-left: 3px solid #b76b41; }
+.scope { margin-top: 27px; } ul { padding-left: 20px; color: #52647a; } li { margin: 5px 0; }
+.notice { margin-top: 25px; padding-top: 18px; border-top: 1px solid #d6dfe8; font-size: 13px; color: #52647a; }
+footer { padding: 18px 5%; border-top: 1px solid #d6dfe8; color: #627287; font-size: 12px; }
+@media (max-width: 600px) { header { align-items: flex-start; flex-direction: column; } main { margin-top: 25px; } dl div { grid-template-columns: 1fr; gap: 2px; } }

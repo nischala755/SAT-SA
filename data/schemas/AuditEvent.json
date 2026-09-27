@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "Role": {
+      "enum": [
+        "reader",
+        "examiner",
+        "administrator"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Action",
+      "type": "string"
+    },
+    "actor": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Actor",
+      "type": "string"
+    },
+    "details": {
+      "additionalProperties": true,
+      "title": "Details",
+      "type": "object"
+    },
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "object_id": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "role": {
+      "$ref": "#/$defs/Role"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "timestamp",
+    "actor",
+    "role",
+    "action",
+    "object_id"
+  ],
+  "title": "AuditEvent",
+  "type": "object"
+}

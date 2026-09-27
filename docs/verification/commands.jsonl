@@ -1,0 +1,98 @@
+{"time": "20260927T112958922", "command": ".venv\\Scripts\\python -m pip install -e \".[test]\"", "exit_code": 0, "log": "artifacts/verification/20260927T112958922.log"}
+{"time": "20260927T113018032", "command": "docker info", "exit_code": 0, "log": "artifacts/verification/20260927T113018032.log"}
+{"time": "20260927T113036828", "command": ".venv\\Scripts\\python -m pytest tests/unit/test_models.py tests/unit/test_config.py -q", "exit_code": 1, "log": "artifacts/verification/20260927T113036828.log"}
+{"time": "20260927T113043462", "command": "npm view next version", "exit_code": 0, "log": "artifacts/verification/20260927T113043462.log"}
+{"time": "20260927T113123241", "command": "npm view react version", "exit_code": 0, "log": "artifacts/verification/20260927T113123241.log"}
+{"time": "20260927T113140774", "command": "python --version", "exit_code": 0, "log": "artifacts/verification/20260927T113140774.log"}
+{"time": "20260927T113140954", "command": "node --version", "exit_code": 0, "log": "artifacts/verification/20260927T113140954.log"}
+{"time": "20260927T113141022", "command": "npm --version", "exit_code": 0, "log": "artifacts/verification/20260927T113141022.log"}
+{"time": "20260927T113141512", "command": "docker compose version", "exit_code": 0, "log": "artifacts/verification/20260927T113141512.log"}
+{"time": "20260927T113205387", "command": "python -m pytest tests/unit -q --tb=line", "exit_code": 1, "log": "artifacts/verification/20260927T113205387.log"}
+{"time": "20260927T113430848", "command": ".venv\\Scripts\\python -m pytest tests/unit -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T113430848.log"}
+{"time": "20260927T113437851", "command": ".venv\\Scripts\\python scripts/export_contracts.py", "exit_code": 0, "log": "artifacts/verification/20260927T113437851.log"}
+{"time": "20260927T113438760", "command": ".venv\\Scripts\\python scripts/export_contracts.py --check", "exit_code": 0, "log": "artifacts/verification/20260927T113438760.log"}
+{"time": "20260927T113555919", "command": ".venv\\Scripts\\python -m pytest tests/integration -q --tb=line", "exit_code": 1, "log": "artifacts/verification/20260927T113555919.log"}
+{"time": "20260927T113802899", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 1, "log": "artifacts/verification/20260927T113802899.log"}
+{"time": "20260927T113828759", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 1, "log": "artifacts/verification/20260927T113828759.log"}
+{"time": "20260927T113853361", "command": ".venv\\Scripts\\python -m pip install pytz", "exit_code": 0, "log": "artifacts/verification/20260927T113853361.log"}
+{"time": "20260927T113901379", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T113901379.log"}
+{"time": "20260927T114019558", "command": ".venv\\Scripts\\python -m pytest tests/unit/test_generator.py -q --tb=line", "exit_code": 1, "log": "artifacts/verification/20260927T114019558.log"}
+{"time": "20260927T114226580", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T114226580.log"}
+{"time": "20260927T114344143", "command": ".venv\\Scripts\\python -m pytest tests/integration/test_health.py -q --tb=line", "exit_code": 1, "log": "artifacts/verification/20260927T114344143.log"}
+{"time": "20260927T114351047", "command": "npm --prefix apps/web install --save-exact ajv --no-audit --no-fund", "exit_code": 0, "log": "artifacts/verification/20260927T114351047.log"}
+{"time": "20260927T114419452", "command": ".venv\\Scripts\\python -m pytest tests/integration/test_bootstrap.py -q --tb=line", "exit_code": 1, "log": "artifacts/verification/20260927T114419452.log"}
+{"time": "20260927T114423825", "command": ".venv\\Scripts\\python scripts/generate_demo.py --seed 20260927 --output data/sample/demo --labels-output data/ground_truth/demo --register runtime/metadata.duckdb", "exit_code": 0, "log": "artifacts/verification/20260927T114423825.log"}
+{"time": "20260927T114513892", "command": ".venv\\Scripts\\python -m pytest tests/integration/test_health.py tests/integration/test_bootstrap.py -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T114513892.log"}
+{"time": "20260927T114546541", "command": ".venv\\Scripts\\python scripts/generate_demo.py --seed 20260927 --output artifacts/replica/demo --labels-output artifacts/replica-labels/demo", "exit_code": 0, "log": "artifacts/verification/20260927T114546541.log"}
+{"time": "20260927T114547347", "command": ".venv\\Scripts\\python -m pip freeze --exclude-editable", "exit_code": 0, "log": "artifacts/verification/20260927T114547347.log"}
+{"time": "20260927T114708500", "command": ".venv\\Scripts\\python -m pip freeze --exclude-editable > requirements.lock", "exit_code": 0, "log": "artifacts/verification/20260927T114708500.log"}
+{"time": "20260927T114711779", "command": "git status --short", "exit_code": 0, "log": "artifacts/verification/20260927T114711779.log"}
+{"time": "20260927T114733194", "command": ".venv\\Scripts\\python -m uvicorn sat_sa_api.main:create_app --factory --host 127.0.0.1 --port 8000", "exit_code": -1, "log": "artifacts/verification/20260927T114733194.log"}
+{"time": "20260927T114908656", "command": ".venv\\Scripts\\python scripts/verify_phase1.py", "exit_code": 0, "log": "artifacts/verification/20260927T114908656.log"}
+{"time": "20260927T114913679", "command": "docker compose config --quiet", "exit_code": 0, "log": "artifacts/verification/20260927T114913679.log"}
+{"time": "20260927T114917918", "command": "npm --prefix apps/web install --save-dev --save-exact typescript @types/node @types/react @types/react-dom vitest @playwright/test --no-audit --no-fund", "exit_code": 0, "log": "artifacts/verification/20260927T114917918.log"}
+{"time": "20260927T114924864", "command": "docker compose build api", "exit_code": 0, "log": "artifacts/verification/20260927T114924864.log"}
+{"time": "20260927T115142100", "command": "npm --prefix apps/web test", "exit_code": 1, "log": "artifacts/verification/20260927T115142100.log"}
+{"time": "20260927T115203322", "command": "npm --prefix apps/web run test:e2e", "exit_code": 1, "log": "artifacts/verification/20260927T115203322.log"}
+{"time": "20260927T115222674", "command": "docker compose up api --pull never --no-build --wait", "exit_code": 0, "log": "artifacts/verification/20260927T115222674.log"}
+{"time": "20260927T115425266", "command": "npm --prefix apps/web test", "exit_code": 0, "log": "artifacts/verification/20260927T115425266.log"}
+{"time": "20260927T115430928", "command": "npm --prefix apps/web run typecheck", "exit_code": 0, "log": "artifacts/verification/20260927T115430928.log"}
+{"time": "20260927T115433874", "command": "npm --prefix apps/web run build", "exit_code": 0, "log": "artifacts/verification/20260927T115433874.log"}
+{"time": "20260927T115442393", "command": "docker compose build web", "exit_code": 0, "log": "artifacts/verification/20260927T115442393.log"}
+{"time": "20260927T115556700", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T115556700.log"}
+{"time": "20260927T115808243", "command": ".venv\\Scripts\\python scripts/export_contracts.py --check", "exit_code": 0, "log": "artifacts/verification/20260927T115808243.log"}
+{"time": "20260927T115812780", "command": "npm --prefix apps/web start", "exit_code": -1, "log": "artifacts/verification/20260927T115812780.log"}
+{"time": "20260927T115823138", "command": ".venv\\Scripts\\python scripts/verify_phase1.py --web-url http://127.0.0.1:3000", "exit_code": 0, "log": "artifacts/verification/20260927T115823138.log"}
+{"time": "20260927T115824764", "command": "npm --prefix apps/web run test:e2e", "exit_code": 1, "log": "artifacts/verification/20260927T115824764.log"}
+{"time": "20260927T115955579", "command": "npm --prefix apps/web start", "exit_code": -1, "log": "artifacts/verification/20260927T115955579.log"}
+{"time": "20260927T120005406", "command": "docker compose up --pull never --no-build --wait", "exit_code": 0, "log": "artifacts/verification/20260927T120005406.log"}
+{"time": "20260927T120020899", "command": "npm --prefix apps/web run test:e2e", "exit_code": 0, "log": "artifacts/verification/20260927T120020899.log"}
+{"time": "20260927T120032946", "command": "git add AGENTS.md docs/architecture.md docs/problem-statement.md docs/superpowers/plans/2026-09-27-phase-1.md", "exit_code": 0, "log": "artifacts/verification/20260927T120032946.log"}
+{"time": "20260927T120040049", "command": "git commit -m \"docs: record approved SAT-SA Phase 1 scope\"", "exit_code": 0, "log": "artifacts/verification/20260927T120040049.log"}
+{"time": "20260927T120040628", "command": "git add .", "exit_code": 0, "log": "artifacts/verification/20260927T120040628.log"}
+{"time": "20260927T120044435", "command": "git diff --cached --stat", "exit_code": 0, "log": "artifacts/verification/20260927T120044435.log"}
+{"time": "20260927T120120747", "command": ".venv\\Scripts\\python scripts/verify_containers.py", "exit_code": 1, "log": "artifacts/verification/20260927T120120747.log"}
+{"time": "20260927T120133059", "command": "docker compose ps", "exit_code": 0, "log": "artifacts/verification/20260927T120133059.log"}
+{"time": "20260927T120136910", "command": "docker compose logs --tail 15 web", "exit_code": 0, "log": "artifacts/verification/20260927T120136910.log"}
+{"time": "20260927T120140515", "command": "docker compose port web 3000", "exit_code": 0, "log": "artifacts/verification/20260927T120140515.log"}
+{"time": "20260927T120141177", "command": "curl.exe --max-time 5 -v http://127.0.0.1:3001/api/status", "exit_code": 7, "log": "artifacts/verification/20260927T120141177.log"}
+{"time": "20260927T120153438", "command": "docker inspect sat-sa-web-1 --format \"{{json .HostConfig.PortBindings}} {{json .NetworkSettings.Ports}}\"", "exit_code": 0, "log": "artifacts/verification/20260927T120153438.log"}
+{"time": "20260927T120157526", "command": "docker network inspect sat-sa_offline", "exit_code": 0, "log": "artifacts/verification/20260927T120157526.log"}
+{"time": "20260927T120226725", "command": "docker network create --driver bridge --opt com.docker.network.bridge.enable_ip_masquerade=false sat-sa-probe", "exit_code": 0, "log": "artifacts/verification/20260927T120226725.log"}
+{"time": "20260927T120228171", "command": "docker run --rm --network sat-sa-probe --entrypoint python sat-sa-api:phase1 -c \"import socket; socket.create_connection(('1.1.1.1',443),timeout=3)\"", "exit_code": 0, "log": "artifacts/verification/20260927T120228171.log"}
+{"time": "20260927T120324800", "command": "docker compose up --pull never --no-build --wait", "exit_code": 0, "log": "artifacts/verification/20260927T120324800.log"}
+{"time": "20260927T120342449", "command": "docker network rm sat-sa-probe", "exit_code": 0, "log": "artifacts/verification/20260927T120342449.log"}
+{"time": "20260927T120445759", "command": ".venv\\Scripts\\python scripts/verify_containers.py", "exit_code": 0, "log": "artifacts/verification/20260927T120445759.log"}
+{"time": "20260927T120541222", "command": ".venv\\Scripts\\python -m pytest tests/integration/test_repository.py::test_maximum_length_dataset_identifier_can_be_registered tests/unit/test_generator.py::test_invalid_label_destination_does_not_publish_evidence -q --tb=short", "exit_code": 1, "log": "artifacts/verification/20260927T120541222.log"}
+{"time": "20260927T120626757", "command": ".venv\\Scripts\\python -m pytest -q --tb=short", "exit_code": 0, "log": "artifacts/verification/20260927T120626757.log"}
+{"time": "20260927T120702250", "command": ".venv\\Scripts\\python scripts/export_contracts.py --check", "exit_code": 0, "log": "artifacts/verification/20260927T120702250.log"}
+{"time": "20260927T120704249", "command": "docker compose build", "exit_code": 0, "log": "artifacts/verification/20260927T120704249.log"}
+{"time": "20260927T120714081", "command": "npm --prefix apps/web test", "exit_code": 0, "log": "artifacts/verification/20260927T120714081.log"}
+{"time": "20260927T120717938", "command": "npm --prefix apps/web run typecheck", "exit_code": 0, "log": "artifacts/verification/20260927T120717938.log"}
+{"time": "20260927T120720345", "command": "npm --prefix apps/web run build", "exit_code": 1, "log": "artifacts/verification/20260927T120720345.log"}
+{"time": "20260927T120753022", "command": "docker version --format json", "exit_code": 0, "log": "artifacts/verification/20260927T120753022.log"}
+{"time": "20260927T120753815", "command": "npm --prefix apps/web ls --depth=0", "exit_code": 0, "log": "artifacts/verification/20260927T120753815.log"}
+{"time": "20260927T120801501", "command": ".venv\\Scripts\\python -m pip list --format=json", "exit_code": 0, "log": "artifacts/verification/20260927T120801501.log"}
+{"time": "20260927T120804149", "command": "git diff --check", "exit_code": 0, "log": "artifacts/verification/20260927T120804149.log"}
+{"time": "20260927T120804615", "command": "git diff --cached --check", "exit_code": 0, "log": "artifacts/verification/20260927T120804615.log"}
+{"time": "20260927T120910564", "command": "docker compose config --quiet", "exit_code": 0, "log": "artifacts/verification/20260927T120910564.log"}
+{"time": "20260927T120915889", "command": "docker compose -f compose.yaml -f compose.offline.yaml config --quiet", "exit_code": 0, "log": "artifacts/verification/20260927T120915889.log"}
+{"time": "20260927T120958091", "command": "npm --prefix apps/web run build", "exit_code": 0, "log": "artifacts/verification/20260927T120958091.log"}
+{"time": "20260927T120958904", "command": "docker compose up --pull never --no-build --wait", "exit_code": 0, "log": "artifacts/verification/20260927T120958904.log"}
+{"time": "20260927T121053558", "command": "docker compose exec -T api python --version", "exit_code": 0, "log": "artifacts/verification/20260927T121053558.log"}
+{"time": "20260927T121056185", "command": "docker compose exec -T web node --version", "exit_code": 0, "log": "artifacts/verification/20260927T121056185.log"}
+{"time": "20260927T121057910", "command": "docker compose exec -T web npm --version", "exit_code": 0, "log": "artifacts/verification/20260927T121057910.log"}
+{"time": "20260927T121128681", "command": ".venv\\Scripts\\python scripts/verify_containers.py", "exit_code": 0, "log": "artifacts/verification/20260927T121128681.log"}
+{"time": "20260927T121139378", "command": "npm --prefix apps/web run test:e2e", "exit_code": 1, "log": "artifacts/verification/20260927T121139378.log"}
+{"time": "20260927T121600789", "command": "curl.exe --fail --max-time 10 http://127.0.0.1:3000/api/status", "exit_code": 0, "log": "artifacts/verification/20260927T121600789.log"}
+{"time": "20260927T121620714", "command": ".venv\\Scripts\\python scripts/verify_phase1.py --web-url http://127.0.0.1:3000", "exit_code": 0, "log": "artifacts/verification/20260927T121620714.log"}
+{"time": "20260927T121623596", "command": "npm --prefix apps/web run test:e2e", "exit_code": 0, "log": "artifacts/verification/20260927T121623596.log"}
+{"time": "20260927T121648963", "command": "docker compose up --build --wait", "exit_code": 0, "log": "artifacts/verification/20260927T121648963.log"}
+{"time": "20260927T121803502", "command": "git --version", "exit_code": 0, "log": "artifacts/verification/20260927T121803502.log"}
+{"time": "20260927T121804878", "command": "git rev-parse --git-dir --git-common-dir --show-toplevel", "exit_code": 0, "log": "artifacts/verification/20260927T121804878.log"}
+{"time": "20260927T121806587", "command": "git branch --show-current", "exit_code": 0, "log": "artifacts/verification/20260927T121806587.log"}
+{"time": "20260927T121821199", "command": ".venv\\Scripts\\python scripts/verify_phase1.py --api-url http://127.0.0.1:8001 --web-url http://127.0.0.1:3001", "exit_code": 0, "log": "artifacts/verification/20260927T121821199.log"}
+{"time": "20260927T121822679", "command": "docker compose ps", "exit_code": 0, "log": "artifacts/verification/20260927T121822679.log"}
+{"time": "20260927T121941137", "command": "git diff --check", "exit_code": 0, "log": "artifacts/verification/20260927T121941137.log"}
+{"time": "20260927T121941921", "command": "git add .", "exit_code": 0, "log": "artifacts/verification/20260927T121941921.log"}
+{"time": "20260927T121948001", "command": "git diff --cached --check", "exit_code": 0, "log": "artifacts/verification/20260927T121948001.log"}

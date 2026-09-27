@@ -1,0 +1,57 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "demo_mode": {
+      "title": "Demo Mode",
+      "type": "boolean"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "registered_datasets": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Registered Datasets"
+    },
+    "service": {
+      "const": "sat-sa-api",
+      "default": "sat-sa-api",
+      "title": "Service",
+      "type": "string"
+    },
+    "software_version": {
+      "default": "0.1.0",
+      "title": "Software Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "storage_ready": {
+      "title": "Storage Ready",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "status",
+    "demo_mode",
+    "storage_ready",
+    "registered_datasets",
+    "message"
+  ],
+  "title": "HealthStatus",
+  "type": "object"
+}

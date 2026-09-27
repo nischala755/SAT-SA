@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "filename": {
+      "pattern": "^[a-z_]+\\.parquet$",
+      "title": "Filename",
+      "type": "string"
+    },
+    "row_count": {
+      "minimum": 0,
+      "title": "Row Count",
+      "type": "integer"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "filename",
+    "sha256",
+    "row_count"
+  ],
+  "title": "Artifact",
+  "type": "object"
+}

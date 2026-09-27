@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "severity_mappings": {"1": "critical", "2": "high", "3": "medium", "4": "low", "5": "informational"},
+  "minimum_peer_entities": 3,
+  "minimum_sample_size": 20,
+  "fast_closure_minutes": 15,
+  "recurrence_window_days": 30,
+  "escalation_expected_severities": ["critical", "high"],
+  "monitoring_expected_criticalities": ["critical"],
+  "expected_categories": ["endpoint", "identity", "network"]
+}

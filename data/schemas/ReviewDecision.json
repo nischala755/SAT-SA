@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "ReviewOutcome": {
+      "enum": [
+        "accepted",
+        "dismissed",
+        "explained",
+        "confirmed_concern",
+        "false_positive",
+        "insufficient_evidence",
+        "further_investigation"
+      ],
+      "title": "ReviewOutcome",
+      "type": "string"
+    },
+    "Role": {
+      "enum": [
+        "reader",
+        "examiner",
+        "administrator"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Actor",
+      "type": "string"
+    },
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "decision_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "note": {
+      "default": "",
+      "maxLength": 4000,
+      "title": "Note",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/ReviewOutcome"
+    },
+    "role": {
+      "$ref": "#/$defs/Role"
+    },
+    "signal_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Signal Id",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "decision_id",
+    "signal_id",
+    "cse_id",
+    "actor",
+    "role",
+    "timestamp",
+    "outcome"
+  ],
+  "title": "ReviewDecision",
+  "type": "object"
+}

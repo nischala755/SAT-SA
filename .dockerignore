@@ -1,0 +1,15 @@
+.git
+.venv
+**/node_modules
+**/.next
+**/*.tsbuildinfo
+**/__pycache__
+**/*.egg-info
+runtime
+artifacts
+.superpowers
+data/sample
+data/ground_truth
+.pytest_cache
+**/test-results
+**/playwright-report

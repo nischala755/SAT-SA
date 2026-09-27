@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "ingestion_batch": {
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ingestion Batch",
+          "type": "string"
+        },
+        "source_file": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source File",
+          "type": "string"
+        },
+        "source_record": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Source Record",
+          "type": "string"
+        },
+        "transformation_version": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Transformation Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_file",
+        "source_record",
+        "ingestion_batch",
+        "transformation_version"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Action",
+      "type": "string"
+    },
+    "actor_team": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Actor Team",
+      "type": "string"
+    },
+    "case_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Case Id",
+      "type": "string"
+    },
+    "cse_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Cse Id",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Event Type",
+      "type": "string"
+    },
+    "evidence_reference": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evidence Reference"
+    },
+    "notes_length": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes Length"
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcome"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "cse_id",
+    "provenance",
+    "event_id",
+    "case_id",
+    "timestamp",
+    "event_type",
+    "actor_team",
+    "action"
+  ],
+  "title": "InvestigationEvent",
+  "type": "object"
+}
