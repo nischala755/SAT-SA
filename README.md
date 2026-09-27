@@ -83,7 +83,7 @@ SAT-SA is intended to help NCIIPC supervisors examine periodic submitted SOC evi
 
 ## Requirements and architecture
 
-Authority: [problem statement](docs/problem-statement.md), [approved architecture](docs/architecture.md), [AGENTS.md](AGENTS.md), then [Phase 1 plan](docs/superpowers/plans/2026-09-27-phase-1.md). AGENTS.md is currently empty and has been preserved.
+Authority: [problem statement](docs/problem-statement.md), [approved architecture](docs/architecture.md), [AGENTS.md](AGENTS.md), then the [completion plan](docs/superpowers/plans/2026-09-27-completion.md). Root AGENTS.md remains empty; Next.js generated frontend guidance is scoped to `apps/web/AGENTS.md`.
 
 Next.js/TypeScript serves the application shell and a same-origin status proxy. FastAPI/Pydantic owns the status API. Repository interfaces separate local DuckDB metadata from immutable Parquet evidence. Python analytical modules implement versioned, explainable rules independently of the UI and optional AI. One process owns metadata writes; stop the API before running a metadata-writing CLI.
 
@@ -243,7 +243,7 @@ packages/shared-types/      Generated TypeScript contracts
 data/sample/demo/           Six evidence tables and immutable manifest
 data/ground_truth/demo/      Separate synthetic scenario labels
 data/schemas/               Generated JSON schemas
-config/                     Future analytical configuration
+config/                     Active engine thresholds and foundation configuration
 docker/                     API/frontend Dockerfiles
 scripts/                    Generation and verification commands
 tests/                      Python regression tests

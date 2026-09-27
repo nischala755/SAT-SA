@@ -30,7 +30,8 @@ def _normalize(submission, batch):
             reader=csv.DictReader(io.StringIO(content))
             if len(reader.fieldnames or []) != len(set(reader.fieldnames or [])):
                 raise ValueError('Duplicate CSV columns')
-            rows=list(reader)
+            try: rows=list(reader)
+            except csv.Error as exc: raise ValueError(f'CSV parse error in {name}: {exc}') from None
         else:
             raise ValueError('Only CSV and JSON exports are accepted')
         count+=len(rows)

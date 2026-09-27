@@ -48,4 +48,12 @@ dt { color: #56667a; } dd { margin: 0; }
 .scope { margin-top: 27px; } ul { padding-left: 20px; color: #52647a; } li { margin: 5px 0; }
 .notice { margin-top: 25px; padding-top: 18px; border-top: 1px solid #d6dfe8; font-size: 13px; color: #52647a; }
 footer { padding: 18px 5%; border-top: 1px solid #d6dfe8; color: #627287; font-size: 12px; }
+header { padding-top:14px;padding-bottom:14px; }
+body main { margin-top:20px; }
+.panel { padding:14px; }
+.panel-heading { padding-bottom:8px;margin-bottom:8px; }
+.panel dl { display:flex;flex-wrap:wrap;gap:18px; }
+.panel dl div { display:block;min-width:150px;padding:2px 0;font-size:12px; }
+.panel .connected { margin-bottom:6px;font-size:13px; }
+.workbench { margin-top:18px; }
 @media (max-width: 600px) { header { align-items: flex-start; flex-direction: column; } main { margin-top: 25px; } dl div { grid-template-columns: 1fr; gap: 2px; } }

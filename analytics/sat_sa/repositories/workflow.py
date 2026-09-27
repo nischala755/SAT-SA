@@ -28,12 +28,13 @@ class WorkflowRepository(DuckDBMetadataRepository):
             row=self._db().execute('SELECT payload FROM jobs WHERE job_id=?',[job_id]).fetchone()
             return json.loads(row[0]) if row else None
 
-    def jobs(self):
+    def jobs(self,active_only=False):
         with self._lock:
-            return [json.loads(r[0]) for r in self._db().execute('SELECT payload FROM jobs ORDER BY job_id DESC LIMIT 100').fetchall()]
+            where=" WHERE json_extract_string(payload, '$.status') IN ('queued','running')" if active_only else ''
+            return [json.loads(r[0]) for r in self._db().execute('SELECT payload FROM jobs'+where+' ORDER BY job_id DESC').fetchall()]
 
     def recover_jobs(self):
-        for job in self.jobs():
+        for job in self.jobs(active_only=True):
             if job['status'] in ('queued','running'):
                 self.save_job(job['job_id'],{**job,'status':'failed','error':'Application restarted before job completion; submit a new job'})
 
@@ -46,10 +47,15 @@ class WorkflowRepository(DuckDBMetadataRepository):
             row=self._db().execute('SELECT payload FROM results WHERE run_id=?',[run_id]).fetchone()
             return json.loads(row[0]) if row else None
 
-    def runs(self):
+    def runs(self,limit=None,offset=0):
         with self._lock:
-            rows=self._db().execute('SELECT payload FROM results ORDER BY run_id DESC LIMIT 100').fetchall()
+            query='SELECT payload FROM results ORDER BY run_id DESC'
+            rows=self._db().execute(query+(' LIMIT ? OFFSET ?' if limit is not None else ''),[limit,offset] if limit is not None else []).fetchall()
             return [json.loads(r[0])['run'] for r in rows if 'run' in json.loads(r[0])]
+
+    def count_rows(self,table):
+        if table not in ('results','review_decisions'): raise ValueError('Invalid metadata table')
+        with self._lock: return self._db().execute(f'SELECT count(*) FROM {table}').fetchone()[0]
 
     def event(self,actor,role,action,object_id,details=None):
         self.append_audit(AuditEvent(event_id=uuid4().hex,timestamp=datetime.now(timezone.utc),actor=actor,
@@ -66,6 +72,11 @@ class WorkflowRepository(DuckDBMetadataRepository):
             except Exception:
                 con.execute('ROLLBACK'); raise
 
-    def decisions(self):
+    def decisions(self,limit=None,offset=0,run_id=None):
         with self._lock:
-            return [json.loads(r[0]) for r in self._db().execute('SELECT payload FROM review_decisions ORDER BY decision_id LIMIT 1000').fetchall()]
+            query='SELECT payload FROM review_decisions'; params=[]
+            if run_id is not None:
+                query+=" WHERE json_extract_string(payload, '$.run_id') = ?";params.append(run_id)
+            query+=" ORDER BY json_extract_string(payload, '$.timestamp'), decision_id"
+            if limit is not None: query+=' LIMIT ? OFFSET ?';params.extend([limit,offset])
+            return [json.loads(r[0]) for r in self._db().execute(query,params).fetchall()]

@@ -12,7 +12,7 @@ test("shell connects to backend and requests only local resources", async ({ pag
   await expect(page.getByText("Local metadata storage ready", { exact: true })).toBeVisible();
   const response = await page.request.get("/api/status");
   expect(response.status()).toBe(200);
-  expect((await response.json()).health.registered_datasets).toBe(1);
+  expect((await response.json()).health.registered_datasets).toBeGreaterThanOrEqual(1);
   await page.screenshot({ path: "../../artifacts/shell.png", fullPage: true });
   expect(remote).toEqual([]);
 });

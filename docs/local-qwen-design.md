@@ -1,6 +1,6 @@
 # Optional local Qwen evidence-summary design
 
-Status: proposed on 2026-09-27 after the user selected local Qwen evidence summaries. Implementation approval pending. This is a separately scoped extension; the approved Phase 1 architecture remains unchanged.
+Status: approved and implemented on 2026-09-27. The user subsequently authorized all remaining phases and optional Mistral. Mistral uses the same bounded CLI selection, requires cloud consent and an environment credential, and never acts as automatic fallback. See the architecture addendum.
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Treat evidence text as untrusted data, never instructions. Prompt constraints ca
 
 ## Alternatives
 
-An in-app interface adds API, concurrency, UI and deployment scope; defer unless requested. A Mistral cloud adapter requires credentials and Internet access; omit because local Qwen was selected. No API key is needed or stored.
+An in-app interface adds API, concurrency, UI and deployment scope; the approved feature remains a CLI. Mistral was subsequently requested and implemented as an optional Internet-connected provider. No credential is committed or included in draft output.
 
 ## Verification
 

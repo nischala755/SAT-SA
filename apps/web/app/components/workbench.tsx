@@ -10,6 +10,8 @@ function Grid({rows,columns,action}:{rows:Row[];columns:string[];action?:(r:Row)
 }
 export default function Workbench(){
  const loadSequence=useRef(0);
+ const [referenceOffset,setReferenceOffset]=useState(0);
+ const [overview,setOverview]=useState<Row|null>(null);
  const [view,setView]=useState<string>('Overview'),[token,setToken]=useState(''),[runs,setRuns]=useState<Row[]>([]),[run,setRun]=useState(''),[datasets,setDatasets]=useState<Row[]>([]),[dataset,setDataset]=useState('demo');
  const [items,setItems]=useState<Row[]>([]),[total,setTotal]=useState(0),[offset,setOffset]=useState(0),[error,setError]=useState(''),[busy,setBusy]=useState(false),[job,setJob]=useState<Row|null>(null);
  const [entity,setEntity]=useState(''),[category,setCategory]=useState(''),[sector,setSector]=useState(''),[severity,setSeverity]=useState(''),[detail,setDetail]=useState<Row|null>(null),[source,setSource]=useState<Row|null>(null);
@@ -36,12 +38,12 @@ export default function Workbench(){
      if(sequence!==loadSequence.current)return;
      setItems(response.items);setTotal(response.total);
      if(view==='Entity')setProfile(await api<Row>(`entities/${entity}?run_id=${run}`,token));
-     if(view==='Overview')setTrends((await api<Page>('trends?run_id='+run+'&limit=100',token)).items);
+     if(view==='Overview'){const summary=await api<Row>('overview?'+query,token);if(sequence===loadSequence.current){setOverview(summary);setTrends(summary.trends as Row[]);}}
    }catch(e){if(sequence===loadSequence.current)setError(String(e));}finally{if(sequence===loadSequence.current)setBusy(false);}
  },[view,run,offset,entity,category,sector,severity,token]);
  useEffect(()=>{void load();},[load]);
  function navigate(next:string){setView(next);setOffset(0);setDetail(null);setSource(null);}
- async function inspect(id:string){try{setDetail(await api<Row>(`signals/${id}?run_id=${run}&limit=25`,token));setSource(null);setSaved('');setNote('');}catch(e){setError(String(e));}}
+ async function inspect(id:string,offset=0,selected?:Row){try{setDetail(await api<Row>(`signals/${id}?run_id=${run}&limit=25&offset=${offset}`,token));setReferenceOffset(offset);setSource(null);if(offset===0){setSaved('');setNote('');}if(selected)await openSource(selected);}catch(e){setError(String(e));}}
  async function openSource(ref:Row){try{const data=await api<Page>('evidence?'+new URLSearchParams({dataset_id:String(ref.dataset_id),cse_id:String(ref.cse_id),table:String(ref.record_type),record_id:String(ref.record_id)}),token);setSource(data.items[0]??null);}catch(e){setError(String(e));}}
  async function decide(){if(!detail)return;try{await api('reviews',token,{run_id:run,signal_id:detail.signal_id,cse_id:detail.cse_id,outcome,note});setSaved('Human decision recorded in audit trail.');}catch(e){setError(String(e));}}
  const selectedRun=runs.find(r=>r.run_id===run);
@@ -59,22 +61,24 @@ export default function Workbench(){
   {error&&<p role="alert" className="error">{error}</p>}{busy&&<p role="status">Loading evidence-backed results…</p>}
   {view==='Data ingestion'?<Ingestion token={token} onJob={setJob}/>:<>
   <h2>{view==='Overview'?'Supervisory overview':view==='Entity'?`Entity assessment: ${entity}`:view}</h2>
-  {['Overview','Entities'].includes(view)&&<label>Sector filter <select value={sector} onChange={e=>{setSector(e.target.value);setOffset(0);}}><option value="">All sectors</option><option>energy</option><option>financial_services</option></select></label>}
+  {['Overview','Entities'].includes(view)&&<label>Sector filter <input value={sector} placeholder="All sectors; enter an exact sector name" onChange={e=>{setSector(e.target.value);setOffset(0);}}/></label>}
   {['Signals','Review queue','Negative space'].includes(view)&&<div className="toolbar"><label>CSE filter <input value={entity} placeholder="All entities" onChange={e=>{setEntity(e.target.value);setOffset(0);}}/></label>{view==='Signals'&&<><label>Signal family <select value={category} onChange={e=>{setCategory(e.target.value);setOffset(0);}}><option value="">All families</option>{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Severity <select value={severity} onChange={e=>setSeverity(e.target.value)}><option value="">All severities</option><option>high</option><option>medium</option></select></label></>}</div>}
-  {view==='Overview'&&!busy&&!error&&<><div className="kpis">{[['CSEs',total],['Alerts',items.reduce((n,r)=>n+Number(r.alerts),0)],['Cases',items.reduce((n,r)=>n+Number(r.cases),0)],['Review indicators',items.reduce((n,r)=>n+Number(r.signal_count),0)]].map(([label,value])=><div key={String(label)}><span>{label}</span><strong>{value}</strong></div>)}</div>
+  {view==='Overview'&&!busy&&!error&&overview&&<><div className="kpis">{[['CSEs',overview.cse_count],['Alerts',overview.alerts],['Cases',overview.cases],['Review indicators',overview.signal_count]].map(([label,value])=><div key={String(label)}><span>{display(label)}</span><strong>{display(value)}</strong></div>)}</div>
+  <details><summary>Attention distribution by signal family · {display(overview.evidence_gap_count)} evidence-gap indicators</summary><Grid rows={Object.entries(overview.attention_distribution as Row).map(([family,indicators])=>({family,indicators}))} columns={['family','indicators']}/></details>
   <details open><summary>Submitted alert volume by month</summary><div className="bars">{months.map(([month,count])=><div key={month}><span>{month}</span><meter min={0} max={Math.max(...months.map(m=>m[1]),1)} value={count}/><span>{count}</span></div>)}</div></details></>}
   {['Overview','Entities'].includes(view)&&<Grid rows={items} columns={['cse_id','sector','peer_group','alerts','cases','signal_count','high_priority','completeness']} action={r=><button aria-label={'Assess '+r.cse_id} onClick={()=>{setEntity(String(r.cse_id));navigate('Entity');}}>Assess</button>}/>}
   {profile&&<><p>{display(profile.name)} · {display(profile.peer_group)}</p><details open><summary>Peer and historical comparison; unavailable analyses</summary><pre>{JSON.stringify({peer:profile.peer,historical_closure_minutes:profile.historical_closure_minutes,current_closure_minutes:profile.current_closure_minutes,unavailable:profile.unavailable},null,2)}</pre></details></>}
   {['Signals','Negative space','Entity'].includes(view)&&<Grid rows={items} columns={['name','category','severity','evidence_count','confidence','observed_evidence']} action={r=><button aria-label={'Inspect '+r.name} onClick={()=>void inspect(String(r.signal_id))}>Inspect evidence</button>}/>}
-  {view==='Review queue'&&<Grid rows={items} columns={['cse_id','record_type','record_id','priority','reasons','contributions','confidence']} action={r=><button onClick={()=>void inspect(String((r.signal_ids as string[])[0]))}>Review evidence</button>}/>}
+  {view==='Review queue'&&<Grid rows={items} columns={['cse_id','record_type','record_id','priority','reasons','contributions','confidence']} action={r=><button onClick={()=>void inspect(String((r.signal_ids as string[])[0]),0,(r.references as Row[])[0])}>Review evidence</button>}/>}
   {view==='Audit trail'&&<Grid rows={items} columns={['timestamp','actor','role','action','object_id','details']}/>}
   {view==='Validation'&&validation&&<><p>Synthetic evaluation is separate from human-reviewed outcomes. Unlabelled synthetic records are treated as negatives only within this benchmark.</p>{validation.unavailable_reason&&<p>{display(validation.unavailable_reason)}</p>}<Grid rows={Object.entries((validation.synthetic??{}) as Row).map(([metric,value])=>({metric,value}))} columns={['metric','value']}/><h3>Human review outcomes</h3><pre>{JSON.stringify(validation.human_review,null,2)}</pre></>}
   {view!=='Validation'&&<div className="pagination"><button disabled={offset===0} onClick={()=>setOffset(Math.max(0,offset-25))}>Previous page</button><span>{total?offset+1:0}–{Math.min(offset+25,total)} of {total}</span><button disabled={offset+25>=total} onClick={()=>setOffset(offset+25)}>Next page</button></div>}
   </>}
   {detail&&<aside className="evidence-panel" aria-label="Evidence drawer"><button onClick={()=>setDetail(null)}>Close evidence</button><h2>Evidence and supervisory hypothesis</h2><h3>{display(detail.name)}</h3>
-  <dl>{['observed_evidence','inferred_signal','supervisory_hypothesis','methodology','confidence','data_completeness','evidence_count'].map(k=><div key={k}><dt>{k.replaceAll('_',' ')}</dt><dd>{display(detail[k])}</dd></div>)}</dl>
+  <dl>{['observed_evidence','inferred_signal','supervisory_hypothesis','methodology','confidence','data_completeness','completeness_basis','evidence_count'].map(k=><div key={k}><dt>{k.replaceAll('_',' ')}</dt><dd>{display(detail[k])}</dd></div>)}</dl>
   <details><summary>Calculation, thresholds and expectations</summary><pre>{JSON.stringify({calculation:detail.calculation,thresholds:detail.thresholds,expectation:detail.expectation,peer:detail.peer},null,2)}</pre></details>
-  <p>Source references (first 25 of {display(detail.evidence_count)}; use paged API for all references)</p><Grid rows={(detail.evidence_references??[]) as Row[]} columns={['cse_id','record_type','record_id']} action={r=><button aria-label={'Open source '+r.record_id} onClick={()=>void openSource(r)}>Open source</button>}/>
+  <p>Source references {referenceOffset+1}–{Math.min(referenceOffset+25,Number(detail.evidence_count))} of {display(detail.evidence_count)}</p><Grid rows={(detail.evidence_references??[]) as Row[]} columns={['cse_id','record_type','record_id']} action={r=><button aria-label={'Open source '+r.record_id} onClick={()=>void openSource(r)}>Open source</button>}/>
+  <div className="pagination"><button disabled={referenceOffset===0} onClick={()=>void inspect(String(detail.signal_id),Math.max(0,referenceOffset-25))}>Previous evidence page</button><button disabled={referenceOffset+25>=Number(detail.evidence_count)} onClick={()=>void inspect(String(detail.signal_id),referenceOffset+25)}>Next evidence page</button></div>
   {source&&<details open><summary>Source record</summary><pre>{JSON.stringify(source,null,2)}</pre></details>}
   <h3>Human examination</h3><label>Review outcome <select value={outcome} onChange={e=>setOutcome(e.target.value)}>{['accepted','dismissed','explained','confirmed_concern','false_positive','insufficient_evidence','further_investigation'].map(o=><option key={o}>{o}</option>)}</select></label>
   <label>Supervisory note <textarea value={note} maxLength={4000} onChange={e=>setNote(e.target.value)}/></label><button disabled={identity?.role==='reader'} onClick={()=>void decide()}>Record human decision</button>{saved&&<p role="status">{saved}</p>}

@@ -11,7 +11,7 @@ from sat_sa.negative_space.expectations import monitoring_gaps, category_gaps
 from sat_sa.peer_analysis.statistics import peer_stats
 from sat_sa.config.engine import EngineConfig,load_engine
 
-VERSION='1.0.0'
+VERSION='1.1.0'
 
 def configuration():
     return load_engine()
@@ -23,7 +23,9 @@ def analyse(records, config=None, dataset_id='demo'):
     closure={cid:median(ds) if (ds:=[rules.duration(a.timestamp,a.closure_timestamp) for a in d['alerts'] if a.closure_timestamp and a.severity in cfg['expected_escalation_severities']]) else None for cid,d in grouped.items()}
     for cse in sorted(records['cses'],key=lambda c:c.cse_id):
         cid=cse.cse_id; d=grouped[cid]; alerts=d['alerts']; cases=d['cases']; assets=d['assets']
-        comparable=[c.cse_id for c in records['cses'] if c.cse_id!=cid and (c.sector,c.peer_group,c.criticality,c.entity_size)==(cse.sector,cse.peer_group,cse.criticality,cse.entity_size)]
+        comparable=[c.cse_id for c in records['cses'] if c.cse_id!=cid and (c.sector,c.peer_group,c.criticality,c.entity_size,c.assessment_period)==(cse.sector,cse.peer_group,cse.criticality,cse.entity_size,cse.assessment_period)]
+        if len(comparable)<cfg['minimum_peers']:
+            unavailable.append({'cse_id':cid,'rule':'peer_comparison','reason':'Insufficient peers with matching sector, cohort, size, criticality and assessment window'})
         peers=peer_stats(closure[cid],[closure[p] for p in comparable if closure[p] is not None],cfg['minimum_peers']) if closure[cid] is not None else {'available':False,'reason':'No closed high-severity alerts','count':0}
         missing=sum(a.closure_timestamp is None for a in alerts)
         completeness=(len(alerts)-missing)/len(alerts) if alerts else 0
@@ -37,15 +39,39 @@ def analyse(records, config=None, dataset_id='demo'):
             'historical_closure_minutes':median(historical) if historical else None,'current_closure_minutes':median(current) if current else None}
         entities.append(entity)
 
+        high_alerts=[a for a in alerts if a.severity in cfg['expected_escalation_severities']]
+        high_cases=[c for c in cases if c.closed_at and c.severity in cfg['expected_escalation_severities']]
+        eligible_escalation=[a for a in alerts if a.closure_timestamp and (a.escalation_required is True or a.severity in cfg['expected_escalation_severities'])]
+        event_counts=Counter(e.case_id for e in d['investigation_events'])
+        def fraction(num,den): return num/den if den else 0
+        complete_events=fraction(sum(min(event_counts[c.case_id],cfg['minimum_investigation_events']) for c in high_cases),len(high_cases)*cfg['minimum_investigation_events'])
+        closed_cases=[c for c in cases if c.closed_at]
+        def rule_completeness(rule):
+            if rule in ('fast_closure','peer_deviation'):
+                return fraction(sum(a.closure_timestamp is not None for a in high_alerts),len(high_alerts)),'Closed timestamp present among high/critical alerts; open alerts lack a completed duration'
+            if rule in ('weak_investigation','metric_integrity'):
+                return complete_events,'Submitted investigation events relative to configured minimum for eligible closed high-severity cases'
+            if rule=='missing_escalation':
+                known={e.alert_id for e in d['escalations']}
+                return fraction(sum(a.escalation_timestamp is not None or a.alert_id in known for a in eligible_escalation),len(eligible_escalation)),'Escalation timestamp or record present among eligible closed alerts'
+            if rule=='missing_fields':
+                return fraction(sum((c.root_cause is not None)+(c.remediation_status is not None) for c in closed_cases),2*len(closed_cases)),'Root-cause and remediation fields present among closed cases'
+            if rule=='workload_concentration': return fraction(sum(c.investigator is not None for c in cases),len(cases)),'Investigator identity supplied among cases'
+            if rule=='recurrence': return fraction(sum(a.asset_id is not None for a in alerts),len(alerts)),'Asset reference supplied among alerts'
+            if rule=='template_repetition': return fraction(sum((c.closure_reason is not None)+(c.investigation_steps_count is not None) for c in cases),2*len(cases)),'Closure reason and step count supplied among cases'
+            if rule=='closure_bursts': return fraction(len(closed_cases),len(cases)),'Closed timestamp present among cases'
+            return 1.0,'Required normalized fields present for this predicate; completeness of the external submission is not established'
+
         def emit(rule,name,category,rows,kind,denominator,method,severity='medium',expectation=None):
             if not rows: return
             unique=sorted({getattr(r,RECORD_KEYS[kind]):r for r in rows}.values(),key=lambda r:getattr(r,RECORD_KEYS[kind]))
-            sufficient=denominator>=cfg['minimum_sample']
+            rule_complete,basis=rule_completeness(rule)
+            sufficient=denominator>=cfg['minimum_sample'] and rule_complete>=1-cfg['missingness_ratio']
             references=[{'dataset_id':dataset_id,'cse_id':cid,'record_type':kind,'record_id':getattr(r,RECORD_KEYS[kind]),'provenance':r.provenance.model_dump()} for r in unique]
             signals.append({'signal_id':hashlib.sha256(f'{dataset_id}:{cid}:{rule}'.encode()).hexdigest()[:24], 'rule_id':rule,'cse_id':cid,'name':name,
                 'category':category,'severity':severity,'description':'Review indicator; no determination of non-compliance.',
                 'signal_strength':'high' if len(unique)/max(1,denominator)>.5 else 'medium','confidence':'medium' if sufficient else 'limited',
-                'data_completeness':completeness,'evidence_count':len(unique),'methodology':method,'thresholds':cfg,
+                'data_completeness':rule_complete,'completeness_basis':basis,'evidence_count':len(unique),'methodology':method,'thresholds':cfg,
                 'observed_evidence':f'{len(unique)} of {denominator} eligible {kind} match the documented predicate.',
                 'inferred_signal':name,'supervisory_hypothesis':'Check source records and seek context before determining whether this is a supervisory concern.',
                 'evidence_references':references,'calculation_version':VERSION,'calculation':{'numerator':len(unique),'denominator':denominator,'ratio':len(unique)/max(1,denominator)},
@@ -54,10 +80,10 @@ def analyse(records, config=None, dataset_id='demo'):
         fast=rules.fast_closure(alerts,cfg)
         emit('fast_closure','High-severity alerts closed unusually quickly','detection',fast,'alerts',sum(a.severity in cfg['expected_escalation_severities'] and a.closure_timestamp is not None for a in alerts),f"Closed within {cfg['fast_minutes']} minutes; short closure alone does not establish weak investigation.",'high')
         weak=rules.weak_investigation(cases,d['investigation_events'],cfg)
-        emit('weak_investigation','Limited supporting investigation activity','investigation',weak,'cases',len(cases),f"Closed high-severity cases with fewer than {cfg['minimum_investigation_events']} submitted events.",'high')
+        emit('weak_investigation','Limited supporting investigation activity','investigation',weak,'cases',len(high_cases),f"Closed high-severity cases with fewer than {cfg['minimum_investigation_events']} submitted events.",'high')
         emit('template_repetition','Repeated minimal investigation patterns','investigation',rules.repeated_templates(cases,cfg),'cases',len(cases),'Identical closure reason plus low reported step count repeated at least minimum_sample times.')
         escalation=rules.missing_escalation(alerts,d['escalations'],cfg)
-        emit('missing_escalation','Expected escalation evidence absent','escalation',escalation,'alerts',len(alerts),'Closed alerts requiring escalation or matching configured severities, without a timestamp or submitted escalation record.','high',{'expected':'Escalation record or timestamp for eligible alerts','observed':len(alerts)-len(escalation),'gap':len(escalation),'source':'Configured severity/record expectation'})
+        emit('missing_escalation','Expected escalation evidence absent','escalation',escalation,'alerts',len(eligible_escalation),'Closed alerts requiring escalation or matching configured severities, without a timestamp or submitted escalation record.','high',{'expected':len(eligible_escalation),'observed':len(eligible_escalation)-len(escalation),'gap':len(escalation),'source':'Escalation record or timestamp required for configured eligible closed alerts'})
         repeated=rules.recurrence(alerts,cfg)
         emit('recurrence','Recurring activity on the same asset','incident_response',repeated,'alerts',len(alerts),f"At least {cfg['recurrence_count']} alerts of a category on an asset within {cfg['recurrence_days']} days. Review remediation context.")
         unresolved=[c for c in cases if not c.closed_at and (cse.assessment_period.end-c.opened_at).days>=cfg['long_case_days']]

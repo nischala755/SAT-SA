@@ -8,6 +8,7 @@ from sat_sa_contracts.models import PageResult,JobResult,Submission,RunRequest,R
 from sat_sa.ingestion.service import preview_submission
 from sat_sa.ingestion.internal import fetch_export
 from sat_sa.repositories.parquet_evidence import ParquetEvidenceRepository
+from sat_sa.risk.overview import summarize
 
 def router(settings):
     api=APIRouter(prefix='/api/v1')
@@ -21,7 +22,7 @@ def router(settings):
         if person['role'] not in ('examiner','administrator'): raise HTTPException(403,'Examiner permission required')
         return person
     def result(request,run_id):
-        runs=request.app.state.repository.runs()
+        runs=request.app.state.repository.runs(limit=1)
         selected=run_id or (runs[0]['run_id'] if runs else None)
         value=request.app.state.repository.get_result(selected) if selected else None
         if not value: raise HTTPException(404,'No completed analytics run; run analytics first')
@@ -31,6 +32,10 @@ def router(settings):
 
     @api.get('/identity')
     def who(person=Depends(identity)): return person
+
+    @api.get('/overview')
+    def overview(request:Request,run_id:str|None=None,sector:str|None=None,person=Depends(identity)):
+        return summarize(result(request,run_id),sector)
 
     @api.get('/datasets',response_model=PageResult)
     def datasets(request:Request,p=Depends(bounds),person=Depends(identity)): return page(request.app.state.repository.datasets(),*p)
@@ -52,7 +57,7 @@ def router(settings):
     @api.post('/analytics/run',response_model=JobResult,status_code=202)
     def run(body:RunRequest,request:Request,person=Depends(writer)):
         if not request.app.state.repository.get_dataset(body.dataset_id): raise HTTPException(404,'Dataset not registered')
-        if len([j for j in request.app.state.repository.jobs() if j['status'] in ('queued','running')])>=4: raise HTTPException(429,'Job queue is full')
+        if len(request.app.state.repository.jobs(active_only=True))>=4: raise HTTPException(429,'Job queue is full')
         return request.app.state.workflow.submit('analytics',body.dataset_id,person)
 
     @api.post('/ingestion/internal',response_model=JobResult,status_code=202)
@@ -69,7 +74,9 @@ def router(settings):
         return found
 
     @api.get('/analytics/runs',response_model=PageResult)
-    def runs(request:Request,p=Depends(bounds),person=Depends(identity)): return page(request.app.state.repository.runs(),*p)
+    def runs(request:Request,p=Depends(bounds),person=Depends(identity)):
+        repo=request.app.state.repository
+        return {'items':repo.runs(limit=p[1],offset=p[0]),'total':repo.count_rows('results'),'offset':p[0],'limit':p[1]}
 
     @api.get('/entities',response_model=PageResult)
     def entities(request:Request,run_id:str|None=None,sector:str|None=None,peer_group:str|None=None,p=Depends(bounds),person=Depends(identity)):
@@ -118,7 +125,7 @@ def router(settings):
 
     @api.get('/validation')
     def validation(request:Request,run_id:str|None=None,person=Depends(identity)):
-        data=result(request,run_id); reviews=[r for r in request.app.state.repository.decisions() if r['run_id']==data['run']['run_id']]
+        data=result(request,run_id); reviews=request.app.state.repository.decisions(run_id=data['run']['run_id'])
         latest={}
         for r in sorted(reviews,key=lambda r:r['timestamp']): latest[r['signal_id']]=r
         final=[r for r in latest.values() if r['outcome'] in ('confirmed_concern','false_positive','explained')]
@@ -137,7 +144,9 @@ def router(settings):
         return decision
 
     @api.get('/reviews',response_model=PageResult)
-    def reviews(request:Request,p=Depends(bounds),person=Depends(identity)): return page(request.app.state.repository.decisions(),*p)
+    def reviews(request:Request,p=Depends(bounds),person=Depends(identity)):
+        repo=request.app.state.repository
+        return {'items':repo.decisions(limit=p[1],offset=p[0]),'total':repo.count_rows('review_decisions'),'offset':p[0],'limit':p[1]}
 
     @api.get('/audit',response_model=PageResult)
     def audit(request:Request,p=Depends(bounds),person=Depends(identity)):

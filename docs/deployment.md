@@ -1,4 +1,4 @@
-# Phase 1 local deployment
+# Local deployment
 
 Use the exact native and Docker commands in README. `requirements.lock` and `apps/web/package-lock.json` lock tested dependencies. Build-time package registries and base-image pulls are distinct from runtime; archive the resulting images for offline deployment. Runtime containers use only bundled code, system fonts, local CSS/JS and local data.
 
@@ -8,7 +8,11 @@ Container filesystem roots are read-only. Temporary files use tmpfs; data uses t
 
 `docker compose stop` preserves the volume. `docker compose up --pull never --no-build --wait` restarts prepared images without fetching dependencies. Do not delete the volume to resolve an immutable-version mismatch; use a separately named deployment/volume when intentionally creating another demo version.
 
-Host backups must preserve both metadata and evidence while the API is stopped. Encryption-at-rest support is provided by mounting storage from the organization's encrypted filesystem; this prototype does not implement application-level encryption, key management, identity federation or tamper-evident audit signing. Non-demo mode is rejected until authentication is implemented in a later authorized phase.
+Backups must preserve metadata, evidence and raw imports while the API is stopped. Encryption-at-rest uses the organization's encrypted filesystem; application encryption, key management, federation and audit signing are not implemented. Non-demo mode requires `SAT_SA_AUTH_TOKENS` bearer identities. Default Compose remains a synthetic demo; use deployment-managed TLS/access controls beyond loopback.
+
+One local executor processes persisted ingestion/analytics jobs. Startup marks interrupted jobs failed with a retry message. Results and reviews persist. First demo startup computes analytics when no completed run exists. Reviews never alter Parquet evidence.
+
+Optional summary commands are native tools separate from both containers. Qwen uses loopback Ollama. Mistral needs explicit cloud consent and an environment credential; it is the authorized Internet exception. Providers are not imported by analytics and cannot block core startup. Qwen host egress-denied inference is not covered by core Docker verification.
 
 Deployment-plan adjustment: Docker Desktop 29.6.1 left host port bindings empty for an internal-only network, despite healthy containers. Normal Compose therefore uses a standard bridge for localhost access. `compose.offline.yaml` changes it to an internal-only network for verification, where container-local HTTP checks verify the frontend, bundled assets and backend while external TCP probes fail. Browser tests separately block and record nonlocal origins. Normal Compose does not enforce an egress firewall; use the controlled host/network boundary in deployment. This changes packaging details from the plan, not the approved two-container application architecture.
 

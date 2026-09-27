@@ -31,7 +31,7 @@ def get_json(url):
 
 def main():
     before = get_json("http://127.0.0.1:3001/api/status")
-    assert before["ok"] and before["health"]["registered_datasets"] == 1
+    assert before["ok"] and before["health"]["registered_datasets"] >= 1
     # DNS-independent TCP probes; the browser tests separately inspect resource origins.
     python_probe = """import socket,json
 results=[]
@@ -72,7 +72,7 @@ with WorkflowRepository(Path('/var/lib/sat-sa/metadata.duckdb')) as r:
     finally:
         command(["docker", "compose", "up", "--pull", "never", "--no-build", "--wait"])
     assert snapshot_before == snapshot_after, "Evidence or audit changed across restart"
-    assert sum(a['action']=='dataset_registered' for a in snapshot_after['audit']) == 1
+    assert sum(a['action']=='dataset_registered' and a['object_id']=='demo' for a in snapshot_after['audit']) == 1
     isolated = ["docker", "compose", "-f", "compose.yaml", "-f", "compose.offline.yaml"]
     try:
         command(isolated + ["up", "--pull", "never", "--no-build", "--wait"])
@@ -92,7 +92,7 @@ for(const asset of assets){
  await r.arrayBuffer();
 }
 const health=await (await fetch(base+'/api/status')).json();
-if(!health.ok || health.health.registered_datasets!==1) throw Error('Backend unavailable');
+if(!health.ok || health.health.registered_datasets<1) throw Error('Backend unavailable');
 const call=async(path,body)=>{const r=await fetch(base+'/api/service/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const value=await r.json();if(!r.ok)throw Error(JSON.stringify(value));return value;};
 let job=await call('analytics/run',{dataset_id:'demo'});
 for(let i=0;i<120 && ['queued','running'].includes(job.status);i++){await new Promise(r=>setTimeout(r,500));job=await call('jobs/'+job.job_id);}
