@@ -10,7 +10,7 @@
 - Run the synthetic demonstration: follow the Docker quick start.
 - Develop locally: follow the Python/Node setup below.
 - Examine evidence: read the data dictionary and sample Parquet files.
-- Audit the implementation: read the Phase 1 verification report.
+- Audit the implementation: read the current completion verification report and the historical Phase 1 report.
 - Deploy without Internet: prepare images first, then follow the air-gap instructions.
 
 This README uses GitHub-native collapsible guides, navigation links and Mermaid diagrams. It does not require executable JavaScript or a documentation service.
@@ -56,6 +56,10 @@ docker compose start --wait
 ![Actual Phase 1 application shell](docs/verification/shell.png)
 
 ![Actual backend outage with visible retry](docs/verification/real-backend-outage.png)
+
+![Completed supervisory overview with real demo analytics](docs/verification/completion-overview.png)
+
+![Evidence references for an analytical indicator](docs/verification/completion-evidence.png)
 
 These screenshots record the verification session; they are not live status indicators. The second was captured with the backend actually stopped.
 
@@ -441,12 +445,13 @@ Tests default to installed Microsoft Edge. Prepare a supported browser before di
 | [Architecture](docs/architecture.md) | Approved boundaries and future system |
 | [AGENTS.md](AGENTS.md) | Engineering instructions; currently empty |
 | [Phase 1 plan](docs/superpowers/plans/2026-09-27-phase-1.md) | Approved implementation sequence |
-| [Verification report](docs/phase-1-verification.md) | Commands, results, deviations and acceptance evidence |
+| [Phase 1 verification](docs/phase-1-verification.md) | Historical foundation checks |
+| [Completion verification](docs/completion-verification.md) | Current commands, results, deviations and acceptance evidence |
 | [Data dictionary](docs/data-dictionary.md) | Fields, units and missingness |
 | [Analytics methodology](docs/analytics-methodology.md) | Analytical boundaries |
 | [Validation methodology](docs/validation-methodology.md) | Evaluation approach and limits |
 | [Deployment](docs/deployment.md) | Local storage and offline deployment |
-| [Qwen design](docs/local-qwen-design.md) | Proposed summary extension |
+| [Qwen design](docs/local-qwen-design.md) | Optional implemented summary extension and boundaries |
 
 ## Contribution and scope
 

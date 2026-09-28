@@ -4,7 +4,7 @@
 
 The user has authorized phases 2–10 and the local summary design. Optional AI summaries are isolated CLI operations, not analytics, scores or decisions. Qwen runs through loopback Ollama. The user additionally requested an optional Mistral provider: it requires explicit cloud consent and an environment credential, and sends only the selected evidence. This is a documented exception to the earlier blanket prohibition on external calls; default application operation remains fully local and independent of AI. No key is committed. Summary drafts require human source verification. The historical Phase 1 authorization below is superseded by this addendum.
 
-Status: approved by the user on 2026-09-27. Implementation is currently authorized for Phase 1 only, subject to the implementation-plan review. The supplied problem statement governs functional requirements; this document governs architecture and implementation boundaries; AGENTS.md governs engineering behaviour and agent constraints.
+Historical Phase 1 approval (superseded by the completion addendum above): the supplied problem statement governs functional requirements; this document governs architecture and implementation boundaries; AGENTS.md governs engineering behaviour and agent constraints.
 
 ## Purpose and acceptance
 
