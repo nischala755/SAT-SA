@@ -1,232 +1,31 @@
-# SAT-SA
+# SAT-SA · Supervisory Analytics Tool for SOC Assessment
 
-**VISTA repository · Local supervisory analytics prototype**
+**An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/VISTA).
 
-[Quick start](#quick-start) · [Setup](#native-setup-windows-powershell) · [Architecture](#architecture-and-repository-map) · [Data](#synthetic-dataset) · [Qwen](#optional-local-qwen) · [Tests](#tests-and-verification) · [Troubleshooting](#troubleshooting) · [Documentation](#documentation-map)
+[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
 
-<details>
-<summary><strong>Choose your starting point</strong></summary>
-
-- Run the synthetic demonstration: follow the Docker quick start.
-- Develop locally: follow the Python/Node setup below.
-- Examine evidence: read the data dictionary and sample Parquet files.
-- Audit the implementation: read the current completion verification report and the historical Phase 1 report.
-- Deploy without Internet: prepare images first, then follow the air-gap instructions.
-
-This README uses GitHub-native collapsible guides, navigation links and Mermaid diagrams. It does not require executable JavaScript or a documentation service.
-
-</details>
-
-## Quick start
-
-Prerequisites: Git, Docker with Compose, and access to dependency registries for the initial build, or prepared application images.
-
-```powershell
-git clone https://github.com/nischala755/VISTA.git
-cd VISTA
-docker compose up --build --wait
-```
-
-Open **http://127.0.0.1:3001**. Expect **Backend connected**, storage ready, and **1** registered dataset. First startup generates synthetic evidence; subsequent startups verify and reuse it.
-
-| Service | Docker | Native |
-| --- | --- | --- |
-| Application | http://127.0.0.1:3001 | http://127.0.0.1:3000 |
-| Backend health | http://127.0.0.1:8001/api/v1/health | http://127.0.0.1:8000/api/v1/health |
-| OpenAPI schema | http://127.0.0.1:8001/openapi.json | http://127.0.0.1:8000/openapi.json |
-| Frontend status proxy | http://127.0.0.1:3001/api/status | http://127.0.0.1:3000/api/status |
+> **Status:** The full **prototype** workflow is implemented and tested. It is not accredited for restricted submissions or benchmarked for million-record operation. See the [current verification report](docs/completion-verification.md) for exact commands, results, deviations, and open limits. The [Phase 1 report](docs/phase-1-verification.md) is a historical foundation snapshot.
 
 <details>
-<summary><strong>Container operations and persistence</strong></summary>
+<summary><strong>Choose a path</strong></summary>
 
-```powershell
-docker compose ps
-docker compose logs --tail 100 api web
-docker compose stop
-docker compose start --wait
-```
-
-`docker compose down` retains the named data volume. Do not add `--volumes` when preserving evidence and audit history. `sat-sa_sat-sa-data` is mounted at `/var/lib/sat-sa` inside the API container. Bootstrap finishes before the API starts; one API worker owns metadata writes.
-
-</details>
-
-<details>
-<summary><strong>View the verified application and failure state</strong></summary>
-
-![Actual Phase 1 application shell](docs/verification/shell.png)
-
-![Actual backend outage with visible retry](docs/verification/real-backend-outage.png)
-
-![Completed supervisory overview with real demo analytics](docs/verification/completion-overview.png)
-
-![Evidence references for an analytical indicator](docs/verification/completion-evidence.png)
-
-These screenshots record the verification session; they are not live status indicators. The second was captured with the backend actually stopped.
-
-</details>
-
-## Delivery status
-
-| Capability | Status |
+| I want to… | Start here |
 | --- | --- |
-| Application shell and actual storage/backend health | Implemented |
-| Domain validation and reproducible generated contracts | Implemented |
-| Immutable Parquet evidence and DuckDB metadata/audit | Implemented |
-| Seeded multi-entity synthetic dataset | Implemented |
-| Separate ground truth | Implemented; excluded from evidence table selection |
-| Docker and isolated core runtime verification | Verified with networking limits documented below |
-| Ingestion UI, analytics, evidence-gap detection and ranking | Implemented |
-| Assessment views, human reviews, audit and configured bearer identities | Implemented; hardening limits apply |
-| Optional evidence-summary CLI | Qwen verified locally; Mistral adapter implemented, live request returned HTTP 429 |
+| Explore the synthetic demo | [Run the demo](#run-the-demo), then follow the [walkthrough](#guided-supervisory-walkthrough) |
+| Import a structured SOC export | [Bring a structured submission](#bring-a-structured-submission) |
+| Understand a signal or priority | [Analytical interpretation](#analytical-interpretation) and [methodology](docs/analytics-methodology.md) |
+| Develop or test locally | [Developer setup](#developer-setup) and [verification](#verification-and-tested-results) |
+| Prepare disconnected deployment | [Offline operation](#security-offline-operation-and-limits) and [deployment notes](docs/deployment.md) |
+| Inspect optional evidence drafts | [Qwen and Mistral](#optional-evidence-summary-drafting) |
 
-Supervisory Analytics Tool for SOC Assessment
+This README uses GitHub-native links, tables, Mermaid diagrams, and expandable sections. Nothing in the guide loads a remote widget or needs JavaScript beyond GitHub's own renderer.
 
-SAT-SA is intended to help NCIIPC supervisors examine periodic submitted SOC evidence. The product chain is submitted evidence → normalization → supervisory analytics → evidence gaps/anomalies → review prioritization → human examination → auditable supervisory decision.
+</details>
 
-**Current scope:** CSV/JSON ingestion, deterministic indicators across eight signal families, explicit evidence gaps, peer/history comparisons, review prioritization, human decisions, validation and audit. Results are computed from evidence. The Phase 1 report is historical; see the [completion report](docs/completion-verification.md) for current verification and limitations.
-
-## Requirements and architecture
-
-Authority: [problem statement](docs/problem-statement.md), [approved architecture](docs/architecture.md), [AGENTS.md](AGENTS.md), then the [completion plan](docs/superpowers/plans/2026-09-27-completion.md). Root AGENTS.md remains empty; Next.js generated frontend guidance is scoped to `apps/web/AGENTS.md`.
-
-Next.js/TypeScript serves the application shell and a same-origin status proxy. FastAPI/Pydantic owns the status API. Repository interfaces separate local DuckDB metadata from immutable Parquet evidence. Python analytical modules implement versioned, explainable rules independently of the UI and optional AI. One process owns metadata writes; stop the API before running a metadata-writing CLI.
-
-## Native setup (Windows PowerShell)
-
-Use Python 3.12 and Node.js 24. Dependency installation requires a prepared package cache or a network connection. Runtime uses only local services.
-
-```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.lock
-.venv\Scripts\python -m pip install -e . --no-deps
-npm --prefix apps/web ci --no-audit --no-fund
-.venv\Scripts\python scripts/export_contracts.py --check
-```
-
-Initialize a local demo volume before starting the API:
-
-```powershell
-.venv\Scripts\python -m sat_sa.synthetic.bootstrap
-```
-
-This generates evidence in `runtime/evidence/demo`, separate labels in `runtime/ground_truth/demo` and metadata in `runtime/metadata.duckdb`. It is idempotent: subsequent calls verify existing evidence and preserve registration/audit history. A changed seed, corrupt artifact or conflicting immutable registration fails explicitly. Do not run it concurrently with the API.
-
-Terminal 1, from the repository root:
-
-```powershell
-.venv\Scripts\python -m uvicorn sat_sa_api.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
-```
-
-Terminal 2:
-
-```powershell
-npm --prefix apps/web run dev
-```
-
-Open `http://127.0.0.1:3000`. The shell shows actual API connectivity and registered dataset count. Its retry action reports backend failures visibly. API health: `http://127.0.0.1:8000/api/v1/health`; OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`. CDN-backed interactive documentation is disabled.
-
-For a production frontend build:
-
-Stop any running production frontend before rebuilding, particularly on Windows where the running standalone server holds its build directory open.
-
-```powershell
-npm --prefix apps/web run build
-npm --prefix apps/web start
-```
-
-Linux/macOS use `.venv/bin/python` in place of `.venv\Scripts\python`; the other commands are equivalent.
-
-## Synthetic dataset
-
-Checked-in evidence: `data/sample/demo`; ground truth: `data/ground_truth/demo`. Seed `20260927` produces eight entities, two sectors/cohorts, twelve months in 2025, 192 assets, 6,816 alerts, 852 cases, 3,322 investigation events and 2,696 escalation records. All names and evidence are synthetic. Investigation text is represented by short synthetic actions and notes lengths, not sensitive raw notes.
-
-Generate another copy into unused directories:
-
-```powershell
-.venv\Scripts\python scripts/generate_demo.py --seed 20260927 --output artifacts/replica/demo --labels-output artifacts/replica-labels/demo
-```
-
-Paths must not already exist. The dataset folder name is its logical version ID; use `demo` in both copies when comparing full manifest bytes. The same seed, version ID and pinned writer version produce equal logical records and artifact hashes. A different seed changes evidence. The generator never reads labels. Labels are not an allowed evidence repository table and have no API route.
-
-To register a newly generated version in an inactive local database, append `--register runtime/metadata.duckdb`. Duplicate registration is an error, including identical duplicates; bootstrap provides explicit idempotence without overwriting a version.
-
-## Tests and verification
-
-```powershell
-.venv\Scripts\python -m pytest -q
-.venv\Scripts\python scripts/export_contracts.py --check
-npm --prefix apps/web test
-npm --prefix apps/web run typecheck
-npm --prefix apps/web run build
-```
-
-With the API and web application running and the replica generated:
-
-```powershell
-.venv\Scripts\python scripts/verify_phase1.py --web-url http://127.0.0.1:3000
-npm --prefix apps/web run test:e2e
-```
-
-Browser tests default to locally installed Microsoft Edge. For another prepared Playwright browser, set `PLAYWRIGHT_CHANNEL=chromium` and install its browser binary during dependency preparation, not at offline runtime. Set `SAT_SA_WEB_URL` to test a different application address.
-
-The [verification report](docs/phase-1-verification.md) contains actual command results and acceptance gaps. Synthetic benchmark metrics are reported separately from manual-review outcomes and do not establish real-world effectiveness.
-
-## Docker and air-gapped deployment
-
-On a machine with Docker running and access to build dependencies:
-
-```powershell
-docker compose up --build --wait
-```
-
-Open `http://127.0.0.1:3001`; API health is on `http://127.0.0.1:8001/api/v1/health`. Ports differ from native development so both can be verified independently. A local bridge provides loopback-published ports, and the named `sat-sa_sat-sa-data` volume preserves evidence and metadata. Images generate the demo on first start; no runtime download is required. Normal Compose does not itself enforce outbound network blocking; the air-gapped host/network supplies that boundary.
-
-Prepare and transfer images before disconnecting:
-
-```powershell
-docker compose build
-docker image save -o sat-sa-phase1-images.tar sat-sa-api:phase1 sat-sa-web:phase1
-```
-
-On the air-gapped host, copy the image archive and `compose.yaml`, then:
-
-```powershell
-docker image load -i sat-sa-phase1-images.tar
-docker compose up --pull never --no-build --wait
-```
-
-See [deployment details](docs/deployment.md) for storage, boundaries and verification. Building on an unprepared disconnected host is not supported.
-
-`python scripts/verify_containers.py` verifies actual outage handling and persistence, then temporarily applies `compose.offline.yaml`. That override puts both services on an internal-only network, verifies denied external TCP access and successful internal frontend/assets/API requests, and restores normal localhost access. Docker Desktop does not publish host ports in the isolated mode. The script must run only against this project's synthetic demo; it stops/recreates its services and preserves the volume.
-
-## Configuration and limits
-
-`SAT_SA_STORAGE_ROOT` selects local storage; `SAT_SA_DEMO_SEED` selects the deterministic seed before initial generation. `SAT_SA_DEMO_MODE=false` requires configured `SAT_SA_AUTH_TOKENS`; missing authentication configuration fails closed. No login credentials are required for the local synthetic demonstration. This prototype is not security-accredited for restricted submissions. Keep the demonstration on a controlled host.
-
-`config/defaults.json` contains documented future analytical configuration. Active rules use validated `config/engine.json`; `config/defaults.json` retains the original foundation configuration. See [data dictionary](docs/data-dictionary.md), [methodology boundaries](docs/analytics-methodology.md) and [validation methodology](docs/validation-methodology.md).
-
-The synthetic generator builds a bounded demonstration dataset in memory. This is not a tested million-record importer. The evidence reader applies entity filters and pagination in DuckDB; later ingestion needs streaming/chunking. Filesystem administrators can modify local files; hashes detect altered artifacts during verification/bootstrap but are not cryptographic signing or tamper-proof audit storage. Encryption at rest is a deployment-managed encrypted-volume responsibility.
-
-## Architecture and repository map
+## What the product does
 
 ```mermaid
 flowchart LR
-    Browser[Local browser] --> Web[Next.js / TypeScript]
-    Web -->|Status proxy| API[FastAPI / Pydantic]
-    API --> Repo[Repository interfaces]
-    Repo --> DB[(DuckDB metadata and audit)]
-    Repo --> Evidence[(Immutable Parquet evidence)]
-    Generator[Seeded generator] --> Evidence
-    Generator --> Labels[(Separate ground truth)]
-    Contracts[Pydantic contracts] --> API
-    Contracts --> Types[Generated schemas and TypeScript]
-    Types --> Web
-```
-
-The supervisory reasoning chain is:
-
-```mermaid
-flowchart TD
     A[Submitted SOC evidence] --> B[Normalization]
     B --> C[Supervisory analytics]
     C --> D[Evidence gaps and anomalies]
@@ -235,66 +34,192 @@ flowchart TD
     F --> G[Auditable supervisory decision]
 ```
 
-```text
-apps/api/sat_sa_api/          FastAPI factory and storage health
-apps/web/                    Next.js shell, status proxy and tests
-analytics/sat_sa/config/     Validated settings
-analytics/sat_sa/repositories/ DuckDB/Parquet repository implementations
-analytics/sat_sa/synthetic/  Seeded generator and bootstrap
-analytics/sat_sa/...         Reserved analytics and ingestion boundaries
-packages/analytics-contracts/ Canonical Pydantic domain models
-packages/shared-types/      Generated TypeScript contracts
-data/sample/demo/           Six evidence tables and immutable manifest
-data/ground_truth/demo/      Separate synthetic scenario labels
-data/schemas/               Generated JSON schemas
-config/                     Active engine thresholds and foundation configuration
-docker/                     API/frontend Dockerfiles
-scripts/                    Generation and verification commands
-tests/                      Python regression tests
-docs/                       Architecture, methods and verification
-compose.yaml                Local deployment
-compose.offline.yaml        Internal-network verification override
+SAT-SA imports CSV/JSON evidence, preserves an immutable dataset version, calculates deterministic indicators across eight supervisory families, and links each indicator to source records. The examiner sees the observation, rule, thresholds, completeness, peer or within-period context, and a **hypothesis to investigate**. Only a human records an outcome. The analytical engine never reads the separate synthetic ground-truth labels and never calls an AI provider.
+
+The default demonstration contains eight pseudonymous CSEs across energy and financial-services cohorts, 12 months of 2025 evidence, 192 assets, 6,816 alerts, 852 cases, 3,322 investigation events, and 2,696 escalation records. Its 25 current entity-level review indicators are calculated from that data, not embedded as dashboard fixtures.
+
+## Run the demo
+
+Install Git and Docker with Compose. The first image build needs access to prepared base images and dependency packages; subsequent **runtime** operation can be disconnected.
+
+```powershell
+git clone https://github.com/nischala755/VISTA.git
+cd VISTA
+docker compose up --build --wait
+docker compose ps
 ```
 
-### Domain and evidence rules
+Open **http://127.0.0.1:3001**. Wait for **Backend connected** and **Local metadata storage ready**. A fresh volume starts with one registered `demo` dataset; imports add more. The first startup generates the demo and queues a real analytical run. Refresh the workspace if the run is still finishing.
 
-| Contract | Responsibility |
-| --- | --- |
-| CSE | Entity, sector, cohort, criticality and assessment period |
-| Asset | Entity-scoped inventory and monitoring expectation |
-| Alert | Lifecycle and links to assets/cases/escalation evidence |
-| Case | Investigation lifecycle, assignment and disposition |
-| InvestigationEvent | Timestamped action and source provenance |
-| EscalationRecord | Explicit escalation linked to an alert/case |
-| DatasetVersion | Immutable hashes, counts and schema/generator versions |
-| AnalyticsRun | Persisted execution provenance, configuration and hashes |
-| SupervisorySignal | Calculated evidence-backed review indicator |
-| EvidenceReference | Dataset/entity/type/record identity and provenance |
-| ReviewDecision | Human-authored decision; never generated by analytics |
-| AuditEvent | Persisted registration/action history |
-
-Unknown fields, naive timestamps, reversed lifecycles and invalid negative counts fail validation. Missing optional evidence remains null. Entity-scoped references cannot be satisfied by an identically named record in another CSE. Missing escalation evidence is not proof that escalation never occurred.
-
-## Runtime configuration reference
-
-| Variable | Default | Purpose |
+| Local service | Compose URL | Native development URL |
 | --- | --- | --- |
-| `SAT_SA_STORAGE_ROOT` | `runtime` | Local data root; Compose uses `/var/lib/sat-sa` |
-| `SAT_SA_DEMO_MODE` | `true` | Non-demo requires configured bearer identities |
-| `SAT_SA_AUTH_TOKENS` | `{}` | JSON map from secret tokens to server-owned actor/role |
-| `SAT_SA_DEMO_ROLE` | `examiner` | Server-owned demo role |
-| `SAT_SA_INTERNAL_EXPORT_URL` | Unset | Configured private-IP export; disabled by default |
-| `SAT_SA_DEMO_SEED` | `20260927` | First-generation seed; cannot overwrite existing evidence |
-| `SAT_SA_API_URL` | `http://127.0.0.1:8000` | Frontend's server-side API URL; Compose uses `http://api:8000` |
-| `NEXT_TELEMETRY_DISABLED` | Set by launch scripts | Disables Next.js telemetry |
-| `SAT_SA_CONFIG` | `config/defaults.json` | Future analytical configuration; inactive in this phase |
-| `SAT_SA_WEB_URL` | Native local application | Browser-test target |
-| `PLAYWRIGHT_CHANNEL` | `msedge` | Prepared browser for tests |
-
-Set variables in the process's launching shell. The backend does not automatically load `.env`. Compose only passes variables explicitly referenced by its configuration. No API key is required; never put credentials in tracked files.
+| Application | http://127.0.0.1:3001 | http://127.0.0.1:3000 |
+| Backend health | http://127.0.0.1:8001/api/v1/health | http://127.0.0.1:8000/api/v1/health |
+| OpenAPI JSON | http://127.0.0.1:8001/openapi.json | http://127.0.0.1:8000/openapi.json |
+| Frontend status | http://127.0.0.1:3001/api/status | http://127.0.0.1:3000/api/status |
 
 <details>
-<summary><strong>Linux/macOS native setup</strong></summary>
+<summary><strong>Inspect, stop, and restart the containers</strong></summary>
+
+```powershell
+docker compose logs --tail 100 api web
+docker compose stop
+docker compose start --wait
+```
+
+The named `sat-sa_sat-sa-data` volume holds evidence, metadata, results, reviews, and audit events. `docker compose down` retains it; `down --volumes` deletes it. The API runs one writer process because the metadata store is DuckDB. Do not run a metadata-writing CLI against the same database while the API is active.
+
+</details>
+
+<details>
+<summary><strong>See the tested screens</strong></summary>
+
+The [loaded overview](docs/verification/completion-overview.png) shows real demo totals, monthly alert volumes, and entity assessment links. The [evidence drawer](docs/verification/completion-evidence.png) shows an observation, hypothesis, completeness basis, and paginated source references. The [actual backend outage screen](docs/verification/real-backend-outage.png) shows the visible failure and retry state. These are verification captures, not live status indicators.
+
+![Loaded supervisory overview](docs/verification/completion-overview.png)
+
+</details>
+
+## Guided supervisory walkthrough
+
+Use the synthetic demo. The walkthrough follows the same context from dataset and run to source evidence and a human action.
+
+1. **Establish context.** Confirm the green backend status, select the `demo` dataset and its completed assessment run. The run line shows its period, dataset hash, and analytics version. A new run keeps its own configuration snapshot and does not overwrite previous results.
+2. **Scan the overview.** Compare CSE, alert, case, and review-indicator counts. Expand **Attention distribution** and **Submitted alert volume by month**. The exact-name sector filter can narrow imported sectors too.
+3. **Examine an entity.** Select **Assess** on `CSE-01`. Read its peer and within-period context, then select **Inspect evidence** on **High-severity alerts closed unusually quickly**. The rule reports how many eligible alerts matched. Fast closure by itself does not establish poor investigation.
+4. **Trace the evidence.** In the drawer, distinguish **observed evidence**, **inferred signal**, and **supervisory hypothesis**. Expand the calculation and thresholds. Page through references and choose **Open source** to inspect the underlying record. Source lookups are scoped to dataset, CSE, table, and record ID.
+5. **Check missing evidence.** Open **Negative space**. Each indicator names an expected record or category, observed evidence, and an unavailable or gap condition. A missing export field is not proof that an operational action never occurred.
+6. **Prioritize a sample.** Open **Review queue**. A record may support several indicators but appears once, with visible additive priority contributions. **Review evidence** opens the selected source and its related signal. Priority points are not compliance probabilities.
+7. **Make the human decision.** In the evidence drawer, choose an outcome, enter a note, and select **Record human decision**. Open **Audit trail** to see the actor, timestamp, action, and object. A confirmed concern exists only after this human action.
+8. **Interpret validation separately.** **Validation** compares the synthetic injected-label universe with selected records. It shows denominators and a random baseline; human-review outcomes are in a separate section. These numbers do not measure real-world effectiveness or examiner time saved.
+
+<details>
+<summary><strong>What each workspace view contains</strong></summary>
+
+| View | Main question | What to inspect |
+| --- | --- | --- |
+| Overview | Where should I start? | Submitted volumes, indicators, sector and entity summaries |
+| Entities / entity assessment | What happened at this CSE? | Cohort, peer/history context, unavailable analyses and signals |
+| Review queue | Which source records merit examination? | Deduplicated sample, reasons and score contributions |
+| Signals | Why was this indicator produced? | Family, severity, observed facts, calculation and evidence |
+| Negative space | What expected evidence is absent? | Expectation source, observed evidence and sufficiency limits |
+| Data ingestion | Is this export valid and usable? | Mapping, rejected rows, missingness and immutable publication |
+| Validation | How did selection perform on synthetic labels? | Denominators, ranking yield and separate human outcomes |
+| Audit trail | Who acted, when, and on what? | Persisted registrations, runs and supervisory decisions |
+
+</details>
+
+## Bring a structured submission
+
+Use **Data ingestion** in the workspace. Give the dataset a new version ID, select CSV or JSON files, assign each to one of `cses`, `assets`, `alerts`, `cases`, `investigation_events`, or `escalations`, and enter optional **source-column → canonical-column** mappings as JSON. Supply CSE metadata alongside related evidence. Choose **Validate and preview** before **Import immutable dataset**; the import action is enabled only for a valid preview. The UI shows submitted/rejected counts, missingness, normalized records, job progress, and errors.
+
+Select the published dataset and choose **Run analytics**. Jobs and completed runs persist across application restarts. Duplicate dataset registration fails rather than replacing a version. Invalid or reversed lifecycle timestamps fail validation; absent optional evidence remains representable. Non-null links to an alert, case, asset, or CSE must resolve within the same CSE. Raw source files and their hashes are retained separately from normalized Parquet evidence.
+
+| Ingestion boundary | Current value |
+| --- | --- |
+| File types | CSV and JSON |
+| Files per submission | 12 maximum |
+| File content | 2 MB maximum per file |
+| Combined rows | 10,000 maximum |
+| Validation | All-or-nothing publication; invalid submissions do not become datasets |
+| Analytics input | 100,000 records maximum in the current orchestrator |
+
+The [data dictionary](docs/data-dictionary.md) describes canonical fields and units. Canonical Pydantic models are in `packages/analytics-contracts/sat_sa_contracts/models.py`; generated JSON schemas are in `data/schemas/`. A configured internal REST export adapter exists for administrator use, but is disabled by default. It accepts a fixed private-IP endpoint from deployment configuration, not a caller-supplied URL. Database exports use the same CSV/JSON contracts.
+
+<details>
+<summary><strong>Use the API directly for inspection</strong></summary>
+
+These read-only examples use the running Compose deployment. Lists are paginated (`limit` 1–100 and nonnegative `offset`). Replace IDs with values returned by your own run.
+
+```powershell
+$base = 'http://127.0.0.1:8001/api/v1'
+Invoke-RestMethod "$base/health"
+Invoke-RestMethod "$base/datasets?limit=10&offset=0"
+Invoke-RestMethod "$base/analytics/runs?limit=10&offset=0"
+Invoke-RestMethod "$base/entities?limit=10&offset=0"
+Invoke-RestMethod "$base/signals?cse_id=CSE-01&limit=10&offset=0"
+Invoke-RestMethod "$base/review-queue?cse_id=CSE-01&limit=10&offset=0"
+Invoke-RestMethod "$base/evidence?dataset_id=demo&cse_id=CSE-01&table=alerts&limit=10&offset=0"
+```
+
+`/api/v1/overview`, `/trends`, `/peer-analysis`, `/validation`, `/reviews`, and `/audit` provide further read paths. `/signals/{signal_id}` pages references; `/jobs/{job_id}` reports async progress. The browser uses a same-origin `/api/service/...` proxy to the local backend. OpenAPI JSON is available; CDN-backed API documentation pages are disabled for offline operation.
+
+</details>
+
+## How the system works
+
+```mermaid
+flowchart LR
+    Browser[Local browser] --> Web[Next.js / TypeScript]
+    Web -->|Same-origin proxy| API[FastAPI / Pydantic]
+    API --> Work[Single local job worker]
+    Work --> Rules[Versioned deterministic rules]
+    API --> Repos[Repository interfaces]
+    Work --> Repos
+    Repos --> Meta[(DuckDB metadata, runs, audit)]
+    Repos --> Evidence[(Immutable Parquet evidence)]
+    Seed[Seeded generator] --> Evidence
+    Seed --> Truth[(Separate synthetic labels)]
+    Truth -.->|Post-run validation only| API
+```
+
+| Location | Responsibility |
+| --- | --- |
+| `apps/web/` | Next.js shell, assessment views, ingestion wizard, status proxy, browser tests |
+| `apps/api/sat_sa_api/` | Typed FastAPI routes, identities, jobs, storage health |
+| `analytics/sat_sa/ingestion/` | Parsing, mapping, validation, provenance and publication |
+| `analytics/sat_sa/signals/`, `negative_space/`, `peer_analysis/` | Deterministic indicators, expectation gaps and comparable cohorts |
+| `analytics/sat_sa/prioritization/`, `validation/` | Review sampling and post-run evaluation |
+| `analytics/sat_sa/repositories/` | DuckDB metadata/audit and scoped Parquet reads |
+| `analytics/sat_sa/synthetic/` | Seeded demo generation and idempotent bootstrap |
+| `packages/analytics-contracts/`, `packages/shared-types/` | Canonical contracts and generated frontend types |
+| `config/engine.json` | Active validated analytical thresholds |
+| `data/sample/demo/`, `data/ground_truth/demo/` | Checked-in synthetic evidence and separately stored labels |
+| `docker/`, `compose.yaml`, `compose.offline.yaml` | Local images and isolated-network verification |
+| `docs/` | Architecture, methods, deployment and measured verification |
+
+The source hierarchy is the [problem statement](docs/problem-statement.md), [approved architecture](docs/architecture.md), [engineering instructions](AGENTS.md), then the [completion plan](docs/superpowers/plans/2026-09-27-completion.md). The user-authorized optional Mistral exception is recorded in the architecture addendum. The default product remains fully functional without any model or cloud service.
+
+### Analytical interpretation
+
+The eight families cover detection, investigation, escalation, incident response, security operations, governance, operational discipline, and cyber resilience. Rules include fast closure, weak investigation evidence, absent expected escalation evidence, recurring activity, long-running cases, workload concentration, missing fields, closure bursts, monitoring/category gaps, low activity against matched peers, peer closure deviation, and a bounded metric-integrity combination. A signal presents an observable predicate and review hypothesis, **not** a finding of non-compliance.
+
+Peers match sector, peer group, criticality, entity size, and assessment window, exclude the subject, and require a minimum cohort. Within-period history is a split of the submitted period, not a separate prior-period submission. Missing inventory suppresses coverage analysis. Confidence depends on the relevant sample and field completeness; it is not a calibrated probability. Review priority adds documented severity, corroboration, sufficiency, recurrence, and peer-deviation contributions. Novelty currently contributes zero because prior-run comparison is unavailable. Exact rules, defaults and limitations are in the [analytics methodology](docs/analytics-methodology.md).
+
+## Developer setup
+
+<details open>
+<summary><strong>Windows PowerShell: backend and frontend</strong></summary>
+
+Use Python 3.12 and Node.js 24. Install dependencies while registries or a prepared cache are available:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.lock
+.venv\Scripts\python -m pip install -e . --no-deps
+npm --prefix apps/web ci --no-audit --no-fund
+.venv\Scripts\python scripts/export_contracts.py --check
+.venv\Scripts\python -m sat_sa.synthetic.bootstrap
+```
+
+Start the API in one terminal from the repository root:
+
+```powershell
+.venv\Scripts\python -m uvicorn sat_sa_api.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
+```
+
+Start the frontend in a second terminal from the same root:
+
+```powershell
+npm --prefix apps/web run dev
+```
+
+Open http://127.0.0.1:3000. `runtime/` holds native evidence, ground truth, and `metadata.duckdb`. Bootstrap verifies and reuses an existing matching demo; it does not overwrite a conflicting version. Stop the API before running a CLI that writes this metadata store. To check a production frontend build, stop any running production frontend, then run `npm --prefix apps/web run build` followed by `npm --prefix apps/web start`.
+
+</details>
+
+<details>
+<summary><strong>Linux/macOS native commands</strong></summary>
 
 ```bash
 python3.12 -m venv .venv
@@ -306,49 +231,127 @@ npm --prefix apps/web ci --no-audit --no-fund
 .venv/bin/python -m uvicorn sat_sa_api.main:create_app --factory --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-In another terminal at the repository root, run `npm --prefix apps/web run dev`. These are equivalent setup instructions; the recorded native verification used Windows. Linux runtime was tested in Docker, not every Linux/macOS host configuration.
+In another terminal, run `npm --prefix apps/web run dev`. Linux container runtime was verified; these native host commands were recorded as setup guidance, not tested on every Linux/macOS distribution.
 
 </details>
 
-## Optional local Qwen and Mistral summaries
+<details>
+<summary><strong>Generate a deterministic copy of the demo</strong></summary>
 
-AI is an optional **command-line drafting aid**, separate from analytics and decisions. It selects at most 10 records from one immutable dataset/CSE, verifies artifacts and includes source records/references and input/dataset hashes. Drafts are untrusted text requiring human review. Labels are never included. No automatic fallback or model download occurs.
+```powershell
+.venv\Scripts\python scripts/generate_demo.py --seed 20260927 --output artifacts/replica/demo --labels-output artifacts/replica-labels/demo
+```
+
+Destinations must be unused. The last directory name is the logical version ID, so keep `demo` on both copies when comparing full manifests. Identical seeds, version IDs and writer versions produce identical logical records and artifact hashes; different seeds produce different datasets. The generator keeps labels outside evidence, and normal evidence APIs do not expose them. To register a new version against an **inactive** native database, add `--register runtime/metadata.duckdb`; duplicate registration fails. See [dataset verification](docs/completion-verification.md).
+
+</details>
+
+## Verification and tested results
+
+Run the local checks from the repository root after setup:
+
+```powershell
+.venv\Scripts\python -m pytest -q
+.venv\Scripts\python scripts/export_contracts.py --check
+npm --prefix apps/web test
+npm --prefix apps/web run typecheck
+npm --prefix apps/web run build
+```
+
+With the application running, `npm --prefix apps/web run test:e2e -- --workers=1` exercises the browser. It defaults to a prepared Microsoft Edge installation; set `PLAYWRIGHT_CHANNEL` for another already installed Playwright browser. Set `SAT_SA_WEB_URL` when testing a nondefault URL. The browser tests create a synthetic imported dataset and human review in the selected local runtime. For a full isolated-container check, run `.venv\Scripts\python scripts/verify_containers.py` against this project's synthetic Compose deployment; it temporarily stops/recreates services, tests denied egress and persistence, then restores normal networking.
+
+| Verified gate (2026-09-28 completion report) | Result |
+| --- | --- |
+| Python regressions | 101 passed; one upstream deprecation warning |
+| Frontend unit and browser tests | 5 + 5 passed |
+| TypeScript and final Docker production build | Passed |
+| Generated contract freshness | 26 artifacts matched |
+| Same-seed records and hashes; different seed | Deterministic; different seed changes data |
+| Real backend outage and retry | Visible in browser test |
+| Docker startup, isolated core runtime and restart | Passed; external TCP probes blocked during isolation |
+| Optional local Qwen generation | Succeeded on the tested host |
+| Optional live Mistral generation | HTTP 429; successful call unverified |
+
+The final synthetic run analysed 13,886 records and produced 25 indicators. Its post-run selection precision was 55.86%, recall 95.59%, false-positive rate 8.21%, Precision@20 100%, Recall@20 1.47%, and reference traceability 100%. These evaluate injected synthetic patterns, not actual SOC effectiveness. No measured examiner time-savings claim is made. See [validation methodology](docs/validation-methodology.md) for denominators and [completion verification](docs/completion-verification.md) for exact commands, exit codes, environment versions, and limitations.
+
+Generated contracts are derived from the canonical models. After an intentional model change, run `scripts/export_contracts.py` without `--check`, review the generated TypeScript and JSON schemas, then run with `--check`. Hand edits to generated files fail freshness verification.
+
+## Security, offline operation and limits
+
+The default Compose deployment is a **local synthetic demo** bound to `127.0.0.1`. Demo identity is server-owned (`local-demo-examiner` by default). In non-demo mode, configure `SAT_SA_DEMO_MODE=false` and `SAT_SA_AUTH_TOKENS` as a JSON map from bearer token to `{ "actor": "name", "role": "reader|examiner|administrator" }`. Roles and actors come from the backend; a browser cannot supply them as authoritative fields. A reader cannot write. This is a prototype boundary, not SSO/MFA or security accreditation; use deployment-managed TLS, access controls and encrypted storage for any controlled deployment.
+
+The core application needs no Internet, SaaS, cloud API, model download, remote font, CDN asset, or telemetry at runtime. Both final containers served the shell, eight bundled assets, API, analytics, evidence, and human review on an **internal-only** Docker network while external TCP probes failed. Standard Compose uses a local bridge so host ports work and **does not enforce egress blocking by itself**. Apply host/network policy for a permanently disconnected deployment. Initial image builds need dependencies or previously prepared images:
+
+```powershell
+# Connected preparation host
+docker compose build
+docker image save -o sat-sa-images.tar sat-sa-api:phase1 sat-sa-web:phase1
+
+# Disconnected target with the archive and compose.yaml copied over
+docker image load -i sat-sa-images.tar
+docker compose up --pull never --no-build --wait
+```
+
+The image tags retain `phase1` for deployment compatibility; they contain the completed prototype code. The [deployment guide](docs/deployment.md) details storage, restarts and the network verification override.
+
+| Limit or boundary | Consequence |
+| --- | --- |
+| One DuckDB writer / API worker | No multi-process metadata writes or distributed job queue |
+| 100,000 analytical records maximum | No million-record readiness claim; streaming/SQL aggregation and benchmarks remain |
+| 10,000 imported rows and 2 MB/file | Larger exports need a different ingest pipeline |
+| Hashes and local audit | Changed files can be detected; audit is not signed or tamper-proof |
+| Synthetic labels and metrics | No claim of calibrated performance on real SOC submissions |
+| Peer matching and novelty | Asset-count/environment/volume comparison and prior-run novelty remain partial |
+| Filesystem/database publication | A crash can leave unregistered files; it cannot silently overwrite an immutable version |
+
+### Configuration reference
+
+| Variable | Default / behavior | Scope |
+| --- | --- | --- |
+| `SAT_SA_STORAGE_ROOT` | `runtime`; Compose sets `/var/lib/sat-sa` | API and bootstrap storage |
+| `SAT_SA_DEMO_SEED` | `20260927` | First demo generation; does not replace existing data |
+| `SAT_SA_DEMO_MODE` | `true` | Local demo identity or configured bearer mode |
+| `SAT_SA_DEMO_ROLE` | `examiner` | Server-owned demo permission |
+| `SAT_SA_AUTH_TOKENS` | Empty JSON map | Configured server-owned actors/roles |
+| `SAT_SA_INTERNAL_EXPORT_URL` | Unset/disabled | Fixed private-IP administrator adapter |
+| `SAT_SA_API_URL` | `http://127.0.0.1:8000`; Compose sets `http://api:8000` | Frontend server-side proxy |
+| `NEXT_TELEMETRY_DISABLED` | Set by launch scripts/Compose | Frontend telemetry |
+| `PLAYWRIGHT_CHANNEL`, `SAT_SA_WEB_URL` | `msedge`, local URL | Browser tests only |
+| `MISTRAL_API_KEY`, `SAT_SA_MISTRAL_MODEL` | Unset, `mistral-small-latest` | Optional CLI only |
+
+Active analytical thresholds are in validated `config/engine.json`; `config/defaults.json` remains a foundation config. The backend does not automatically load `.env` files. Compose only passes variables named in its configuration. Keep credentials outside tracked files.
+
+## Optional evidence-summary drafting
+
+AI drafting is an **optional CLI**, isolated from analytics, scoring, review decisions and the web application. It selects at most ten records from one dataset and CSE, verifies the manifest, includes original source references, and never includes ground-truth labels. Treat every sentence as an untrusted draft to check against those records. No provider is needed for core operation; there is no automatic cloud fallback.
 
 <details>
 <summary><strong>Local Qwen through Ollama</strong></summary>
 
-The tested host uses Ollama `0.34.4` with `qwen3.5:2b` already installed. Prepare dependencies before disconnecting:
+The tested host used Ollama 0.34.4 and a prepared `qwen3.5:2b` model. Obtain the model **before** disconnecting; no runtime pull occurs.
 
 ```powershell
 ollama list
-# Preparation only, when the model is absent:
-ollama pull qwen3.5:2b
-```
-
-For a dedicated service, or configure/restart the existing desktop service with these settings:
-
-```powershell
+# Connected preparation only, if absent: ollama pull qwen3.5:2b
 $env:OLLAMA_NO_CLOUD = '1'
 $env:OLLAMA_HOST = '127.0.0.1:11434'
 ollama serve
 ```
 
-From the repository root:
+In a separate terminal from the repository root:
 
 ```powershell
 .venv\Scripts\python scripts/summarize_evidence.py --cse CSE-01 --table alerts --limit 3
 ```
 
-The adapter uses loopback only, disables proxies/redirects, and bounds context, output and timeout. A real local generation succeeded. **Qwen inference with enforced host egress denial has not been verified**; core container offline verification is separate. Model disk size is not a RAM requirement.
+The adapter uses loopback, rejects redirects/proxies, and bounds records, output and time. Actual local generation succeeded. **Qwen inference under enforced host egress denial was not tested**; the core Docker offline verification does not invoke Qwen.
 
 </details>
 
 <details>
-<summary><strong>Mistral — explicit optional Internet exception</strong></summary>
+<summary><strong>Optional Mistral with explicit cloud consent</strong></summary>
 
-Mistral is disabled unless selected with `--provider mistral --allow-cloud`. This sends the selected evidence to Mistral. It never generates analytical signals, priorities or decisions. Use only synthetic or explicitly approved evidence.
-
-Configure a valid key in the invoking shell without putting its value in command history:
+This user-authorized exception sends **selected evidence** to Mistral only when both the provider and `--allow-cloud` are specified. Supply a valid key in the invoking shell without writing it into repository files or command history:
 
 ```powershell
 $credential = Get-Credential -UserName 'mistral' -Message 'Enter API key in password field'
@@ -358,134 +361,68 @@ $env:SAT_SA_MISTRAL_MODEL = 'mistral-small-latest'
 Remove-Item Env:MISTRAL_API_KEY
 ```
 
-The supplied key was used transiently for verification and was not stored in the repository. The provider returned **HTTP 429**; successful live Mistral generation remains unverified. Resolve quota/rate limits before retrying. Rotate any key exposed in chat. `.env.example` contains names only; scripts do not automatically load it.
+Use synthetic or explicitly approved evidence only. The supplied key was not committed. A live verification request returned **HTTP 429**; successful live generation remains unverified. The Mistral adapter has mocked-provider tests, but those do not establish provider availability.
 
 </details>
-
-Sources: [Ollama chat API](https://docs.ollama.com/api/chat), [Ollama server configuration](https://docs.ollama.com/faq), [Mistral chat API](https://docs.mistral.ai/api/endpoint/chat). See the summary design and architecture addendum for the authorized exception.
-
-## Recorded verification results
-
-The [Phase 1 report](docs/phase-1-verification.md) records exact commands, versions, failures encountered and final results on **2026-09-27**. These are historical results, not live badges.
-
-| Gate | Result |
-| --- | --- |
-| Python suite | 57 passed |
-| Frontend unit suite | 5 passed |
-| Browser suite | 2 passed |
-| Type checking and production build | Passed |
-| Contract freshness | 20 artifacts verified |
-| Same-seed records and artifact hashes | Identical; Windows/Linux hash matched |
-| Different seed | Different dataset |
-| Duplicate registration / immutable version | Overwrite rejected |
-| Process/application/container restart | Metadata and audit persisted |
-| Actual backend outage | Visible failure and retry |
-| Docker build and startup | Verified |
-| Core isolated runtime | Verified with denied external TCP probes |
-| Qwen inference / AI offline isolation | Not yet verified |
-
-Regenerate contracts only after an intentional canonical model change:
-
-```powershell
-.venv\Scripts\python scripts/export_contracts.py
-.venv\Scripts\python scripts/export_contracts.py --check
-```
-
-Commit canonical and generated changes together. Do not hand-edit generated files or weaken validation to resolve drift. Dataset determinism does not imply future generated prose will be deterministic across model versions or hardware.
 
 ## Troubleshooting
 
 <details>
-<summary><strong>Backend unavailable</strong></summary>
+<summary><strong>The page loads, but the backend is unavailable</strong></summary>
 
-Check the API health URL directly. Confirm storage is usable and `SAT_SA_API_URL` is correct from the frontend process's network. Within Compose, `127.0.0.1` means the web container itself; use the configured `http://api:8000`. Inspect service logs, then retry. A rendered page alone does not establish backend connectivity.
-
-</details>
-
-<details>
-<summary><strong>DuckDB lock or competing writer</strong></summary>
-
-Run one API worker. Stop it before any CLI writes to the same metadata database, then restart it. Repository locks serialize one process's writes; they do not turn DuckDB into a multi-process database server. PostgreSQL remains a future repository migration boundary.
+Open the backend health URL in the table above and inspect `docker compose logs --tail 100 api web`. For native development, start the API before the frontend. Inside Compose, the web container reaches `http://api:8000`, not its own `127.0.0.1`. The UI displays a failure and retry state; a rendered shell alone does not establish connectivity.
 
 </details>
 
 <details>
-<summary><strong>Dataset destination already exists</strong></summary>
+<summary><strong>There is no completed run yet</strong></summary>
 
-Generation intentionally refuses existing destinations. Select an unused parent directory; retain the same final folder name when comparing manifest bytes. Bootstrap is idempotent for existing demo storage. Use a new storage location for a different seed instead of replacing evidence.
-
-</details>
-
-<details>
-<summary><strong>Windows build reports EBUSY</strong></summary>
-
-Stop the production frontend holding its standalone directory open, build, then restart. Do not kill unrelated Node processes. This condition and its resolution are recorded in the verification report.
+First startup queues real demo analytics in the background. Wait for the job to finish or use **Refresh workspace**. Select the registered dataset and choose **Run analytics** if needed. Inspect `/api/v1/analytics/runs` and service logs. A failed job stays visible; no fake indicators are inserted.
 
 </details>
 
 <details>
-<summary><strong>Isolated Docker services are healthy but host ports do not respond</strong></summary>
+<summary><strong>Import fails or a dataset ID already exists</strong></summary>
 
-The tested Docker Desktop internal-only network prevented host-published access. The verifier probes HTML, assets and API from inside that network, then restores normal Compose. Normal Compose supports host access but is not an outbound firewall; the deployment host/network must supply isolation.
+Use **Validate and preview** to read field and relationship errors. Confirm timestamps, source-to-canonical mappings, CSE metadata and cross-record IDs. Use a new version ID for another import; an existing immutable version cannot be overwritten. Missing optional evidence can be null, but an asserted non-null reference must resolve within its CSE.
 
 </details>
 
 <details>
-<summary><strong>Browser tests cannot find a browser</strong></summary>
+<summary><strong>DuckDB reports a lock</strong></summary>
 
-Tests default to installed Microsoft Edge. Prepare a supported browser before disconnecting and select it with `PLAYWRIGHT_CHANNEL`. Browser download is a testing dependency preparation operation, not an application runtime requirement.
+Stop the API before using a metadata-writing CLI against the same `runtime/metadata.duckdb` or Compose volume. Restart with one API worker. DuckDB is not a multi-process server; repository interfaces preserve a later migration path.
 
 </details>
 
-## Documentation map
+<details>
+<summary><strong>Docker isolation shows healthy containers but no host ports</strong></summary>
 
-| Document | Purpose |
+The internal-only verification network prevented host port publication on the tested Docker Desktop version. The verifier checks frontend, bundled assets and API **inside** that network and restores normal Compose afterward. Use normal Compose for localhost browsing and a deployment network/firewall for permanent egress denial.
+
+</details>
+
+<details>
+<summary><strong>Frontend build reports EBUSY, or browser tests cannot launch</strong></summary>
+
+On Windows, stop the running production frontend before rebuilding its standalone output, then start it again. Browser tests default to installed Microsoft Edge. Prepare the chosen Playwright browser before a disconnected test run and set `PLAYWRIGHT_CHANNEL` if using another browser.
+
+</details>
+
+## Documentation index
+
+| Document | Use it for |
 | --- | --- |
-| [Problem statement](docs/problem-statement.md) | Authoritative functional requirements |
-| [Architecture](docs/architecture.md) | Approved boundaries and future system |
-| [AGENTS.md](AGENTS.md) | Engineering instructions; currently empty |
-| [Phase 1 plan](docs/superpowers/plans/2026-09-27-phase-1.md) | Approved implementation sequence |
-| [Phase 1 verification](docs/phase-1-verification.md) | Historical foundation checks |
-| [Completion verification](docs/completion-verification.md) | Current commands, results, deviations and acceptance evidence |
-| [Data dictionary](docs/data-dictionary.md) | Fields, units and missingness |
-| [Analytics methodology](docs/analytics-methodology.md) | Analytical boundaries |
-| [Validation methodology](docs/validation-methodology.md) | Evaluation approach and limits |
-| [Deployment](docs/deployment.md) | Local storage and offline deployment |
-| [Qwen design](docs/local-qwen-design.md) | Optional implemented summary extension and boundaries |
+| [Problem statement](docs/problem-statement.md) | Authoritative product objectives and acceptance criteria |
+| [Architecture](docs/architecture.md) | Approved system boundaries and documented exception |
+| [Completion plan](docs/superpowers/plans/2026-09-27-completion.md) | Implemented task sequence |
+| [Completion verification](docs/completion-verification.md) | Exact commands, versions, test counts and remaining gaps |
+| [Phase 1 verification](docs/phase-1-verification.md) | Historical foundation verification only |
+| [Data dictionary](docs/data-dictionary.md) | Canonical fields, units, relationships and missingness |
+| [Analytics methodology](docs/analytics-methodology.md) | Predicates, expectations, peers, confidence and priority |
+| [Validation methodology](docs/validation-methodology.md) | Label universe, denominators and evaluation limits |
+| [Deployment](docs/deployment.md) | Local volumes, air-gap preparation, security and recovery boundaries |
+| [Optional summary design](docs/local-qwen-design.md) | AI drafting scope and safeguards |
+| [Engineering instructions](AGENTS.md) | Repository agent guidance |
 
-## Contribution and scope
-
-Keep changes traceable to the requirements and architecture. Preserve entity-scoped references, immutability, missingness, label separation and generated-contract freshness. Add meaningful regression tests for behavior changes and report architectural deviations explicitly.
-
-The user authorized phases 2–10 after Phase 1. See the completion report for implemented workflows, tested boundaries and limitations. Use synthetic data on a controlled local host. No software license has been added; public repository visibility alone does not grant a license.
-
-
-## Demonstrate the supervisory workflow
-
-1. Start Compose. The first demo startup computes a real analytical run in the background.
-2. Select an assessment run to keep its immutable dataset, configuration and period in context.
-3. Open **CSE-01**, inspect **High-severity alerts closed unusually quickly**, then open a source record.
-4. Compare observations, calculation, peer/history context and the supervisory hypothesis separately.
-5. Open **Negative space** for expected/observed/gap evidence. Alert absence does not prove monitoring failure.
-6. Open **Review queue** for deduplicated samples and additive priority contributions.
-7. Record a human outcome and note. **Audit trail** records actor, time and run. Confirmed concern is a human action only.
-8. Open **Validation** for benchmark denominators and separate human-review outcomes.
-9. Use **Data ingestion** to upload exports, map columns, preview validation and publish an immutable version. Select it and run analytics.
-
-### Authentication boundary
-
-Default demo identity is `local-demo-examiner`; no password is needed for synthetic local use. Roles are enforced on the API; browser-supplied role/actor fields are rejected. For non-demo operation set `SAT_SA_DEMO_MODE=false` and `SAT_SA_AUTH_TOKENS` to a locally supplied JSON map of secret tokens to `{ "actor": "name", "role": "reader|examiner|administrator" }`. The frontend keeps entered tokens in page memory only. This is a prototype boundary, not SSO, MFA or security accreditation. Use deployment-managed TLS/access controls beyond loopback.
-
-### Database and internal REST exports
-
-Database exports use the CSV/JSON contracts. `POST /api/v1/ingestion/internal` requires an administrator and configured `SAT_SA_INTERNAL_EXPORT_URL` with a literal private IP. Redirects, proxies, public hostnames and link-local metadata endpoints are rejected. The source must return `{ "files": [...] }` using the submission contract. It is disabled by default and accepts no caller-supplied URL.
-
-### Prototype limits
-
-- Uploads: 2 MB per file, 12 files, 10,000 rows; all-or-nothing validation.
-- Analytics: at most 100,000 input records. The bounded in-memory orchestrator is **not million-record readiness**. Larger workloads require streaming/SQL aggregation and measured benchmarks.
-- Metadata: one process/worker; no distributed job service or PostgreSQL implementation.
-- Drafts are not certified as complete, factually correct or deterministic. Model text cannot automatically become a signal or decision.
-- Filesystem administrators can change local files. Hashes detect changed artifacts; storage is not signed or tamper-proof.
-- Raw imports, evidence and registration span filesystem/database boundaries. A crash may leave raw files or an unregistered immutable directory; neither is silently overwritten.
-- Synthetic metrics characterize this generator/rule set, not actual SOC effectiveness. False positives remain visible.
+This repository has no software license. Public visibility alone does not grant reuse rights.
