@@ -8,7 +8,7 @@ const categories=['detection','investigation','escalation','incident_response','
 function Grid({rows,columns,action}:{rows:Row[];columns:string[];action?:(r:Row)=>React.ReactNode}) {
  return <div className="table-scroll"><table><thead><tr>{columns.map(k=><th key={k}>{k.replaceAll('_',' ')}</th>)}{action&&<th>Examine</th>}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{columns.map(k=><td key={k}>{display(r[k])}</td>)}{action&&<td>{action(r)}</td>}</tr>)}</tbody></table>{!rows.length&&<p>No records match this selection.</p>}</div>;
 }
-export default function Workbench(){
+export default function Workbench({authRequired=false}:{authRequired?:boolean}){
  const loadSequence=useRef(0);
  const [referenceOffset,setReferenceOffset]=useState(0);
  const [overview,setOverview]=useState<Row|null>(null);
@@ -51,7 +51,7 @@ export default function Workbench(){
  return <section className="workbench" aria-label="Supervisory workspace">
   <div className="workspace-title"><h2>Supervisory workspace</h2><span className="badge">{display(identity?.actor)} · {display(identity?.role)}</span></div>
   <p className="notice">Evidence → signal → hypothesis → human examination → auditable decision. Indicators are not findings of non-compliance.</p>
-  <details><summary>Configured identity token (non-demo deployments)</summary><label>Bearer token <input type="password" autoComplete="off" value={token} onChange={e=>setToken(e.target.value)}/></label><p>Kept in page memory only. Roles are assigned by the backend.</p></details>
+  <details open={authRequired}><summary>Configured identity token (non-demo deployments)</summary><label>Bearer token <input type="password" autoComplete="off" value={token} onChange={e=>setToken(e.target.value)}/></label><p>{authRequired?'Enter the provisioned token to load assessment data. ':''}Kept in page memory only. Roles are assigned by the backend.</p></details>
   <div className="toolbar"><label>Assessment run <select value={run} onChange={e=>{setRun(e.target.value);setOffset(0);setDetail(null);}}><option value="">No completed run</option>{runs.map(r=><option key={String(r.run_id)} value={String(r.run_id)}>{String(r.dataset_id)} · {String(r.started_at)}</option>)}</select></label>
   <label>Dataset <select value={dataset} onChange={e=>setDataset(e.target.value)}>{datasets.map(d=><option key={String(d.dataset_id)}>{String(d.dataset_id)}</option>)}</select></label>
   <button disabled={identity?.role==='reader'||['queued','running'].includes(String(job?.status))} onClick={async()=>{try{setJob(await api<Row>('analytics/run',token,{dataset_id:dataset}));}catch(e){setError(String(e));}}}>Run analytics</button><button onClick={()=>{void refresh();void load();}}>Refresh workspace</button></div>

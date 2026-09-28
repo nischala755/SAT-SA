@@ -1,4 +1,4 @@
-"""Explicit local configuration. Phase 1 is a synthetic-data demo only."""
+"""Explicit local configuration for demo and configured-identity deployments."""
 import json
 import os
 from pathlib import Path
@@ -22,7 +22,7 @@ class Settings(Contract):
             from sat_sa.ingestion.internal import validate_endpoint
             validate_endpoint(self.internal_export_url)
         if not self.demo_mode and not self.auth_tokens:
-            raise ValueError("Production authentication is not implemented in Phase 1; demo_mode must be true")
+            raise ValueError("Non-demo mode requires SAT_SA_AUTH_TOKENS")
         return self
 
 

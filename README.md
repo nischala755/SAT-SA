@@ -2,7 +2,7 @@
 
 **An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/VISTA).
 
-[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
+[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
 
 > **Status:** The full **prototype** workflow is implemented and tested. It is not accredited for restricted submissions or benchmarked for million-record operation. See the [current verification report](docs/completion-verification.md) for exact commands, results, deviations, and open limits. The [Phase 1 report](docs/phase-1-verification.md) is a historical foundation snapshot.
 
@@ -16,6 +16,7 @@
 | Understand a signal or priority | [Analytical interpretation](#analytical-interpretation) and [methodology](docs/analytics-methodology.md) |
 | Develop or test locally | [Developer setup](#developer-setup) and [verification](#verification-and-tested-results) |
 | Prepare disconnected deployment | [Offline operation](#security-offline-operation-and-limits) and [deployment notes](docs/deployment.md) |
+| Prepare a cloud-hosted synthetic demo | [Render cloud deployment](#render-cloud-deployment) |
 | Inspect optional evidence drafts | [Qwen and Mistral](#optional-evidence-summary-drafting) |
 
 This README uses GitHub-native links, tables, Mermaid diagrams, and expandable sections. Nothing in the guide loads a remote widget or needs JavaScript beyond GitHub's own renderer.
@@ -185,6 +186,10 @@ The source hierarchy is the [problem statement](docs/problem-statement.md), [app
 The eight families cover detection, investigation, escalation, incident response, security operations, governance, operational discipline, and cyber resilience. Rules include fast closure, weak investigation evidence, absent expected escalation evidence, recurring activity, long-running cases, workload concentration, missing fields, closure bursts, monitoring/category gaps, low activity against matched peers, peer closure deviation, and a bounded metric-integrity combination. A signal presents an observable predicate and review hypothesis, **not** a finding of non-compliance.
 
 Peers match sector, peer group, criticality, entity size, and assessment window, exclude the subject, and require a minimum cohort. Within-period history is a split of the submitted period, not a separate prior-period submission. Missing inventory suppresses coverage analysis. Confidence depends on the relevant sample and field completeness; it is not a calibrated probability. Review priority adds documented severity, corroboration, sufficiency, recurrence, and peer-deviation contributions. Novelty currently contributes zero because prior-run comparison is unavailable. Exact rules, defaults and limitations are in the [analytics methodology](docs/analytics-methodology.md).
+
+## Render cloud deployment
+
+The repository now includes a [Render Blueprint](render.yaml) for a **synthetic, token-gated prototype**: a private API with a persistent disk and a public Next.js frontend connected over Render's private network. This is an **opt-in paid cloud deployment**; it does not replace the verified local/offline mode. Render's current selected plans imply about **$32/month for compute plus disk and usage**, subject to its live pricing. The cloud services have **not yet been provisioned or verified**. Follow the [step-by-step Render guide](docs/render-deployment.md) for account setup, secret entry, first analytical run, and post-deployment persistence checks. Cloudflare Workers would need a different persistence architecture, so there is no equivalent one-click Cloudflare configuration for this codebase.
 
 ## Developer setup
 
@@ -422,6 +427,7 @@ On Windows, stop the running production frontend before rebuilding its standalon
 | [Analytics methodology](docs/analytics-methodology.md) | Predicates, expectations, peers, confidence and priority |
 | [Validation methodology](docs/validation-methodology.md) | Label universe, denominators and evaluation limits |
 | [Deployment](docs/deployment.md) | Local volumes, air-gap preparation, security and recovery boundaries |
+| [Render deployment](docs/render-deployment.md) | Paid cloud Blueprint, token setup and live verification steps |
 | [Optional summary design](docs/local-qwen-design.md) | AI drafting scope and safeguards |
 | [Engineering instructions](AGENTS.md) | Repository agent guidance |
 

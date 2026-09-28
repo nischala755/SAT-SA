@@ -1,4 +1,4 @@
-"""Phase 1 status API. No evidence ingestion or analytical endpoints exist."""
+"""SAT-SA API factory, storage health and persisted workflow lifecycle."""
 import logging
 from contextlib import asynccontextmanager
 

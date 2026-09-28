@@ -20,7 +20,7 @@ export default function Home() {
   useEffect(() => { void refresh(); }, [refresh]);
 
   return <>
-    <header><div className="brand"><h1>SAT-SA</h1><p>Supervisory Analytics Tool for SOC Assessment</p></div><span className="badge">Local synthetic demonstration</span></header>
+    <header><div className="brand"><h1>SAT-SA</h1><p>Supervisory Analytics Tool for SOC Assessment</p></div><span className="badge">Synthetic supervisory prototype</span></header>
     <main>
       <p className="eyebrow">EVIDENCE-LED SUPERVISORY EXAMINATION</p>
       <h2>System status</h2>
@@ -34,9 +34,9 @@ export default function Home() {
           </> : <p role="alert" className="error">{result?.message ?? "Backend unavailable."}</p>}
         </div>
       </section>
-      {result?.ok && <Workbench/>}
+      {result?.ok && <Workbench authRequired={!result.health.demo_mode}/>}
       <p className="notice">Analytics will identify indicators for human examination. They will not make automatic supervisory findings.</p>
     </main>
-    <footer>SAT-SA prototype · Local demonstration · Indicators require human examination</footer>
+    <footer>SAT-SA prototype · Synthetic evidence · Indicators require human examination</footer>
   </>;
 }

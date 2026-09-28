@@ -1,0 +1,44 @@
+# Public synthetic prototype frontend + private persistent API.
+# Creating this Blueprint provisions paid Render services and a persistent disk.
+services:
+  - type: pserv
+    name: sat-sa-api
+    runtime: docker
+    region: singapore
+    plan: 1c-2g
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    numInstances: 1
+    disk:
+      name: sat-sa-data
+      mountPath: /var/lib/sat-sa
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: SAT_SA_STORAGE_ROOT
+        value: /var/lib/sat-sa
+      - key: SAT_SA_DEMO_SEED
+        value: "20260927"
+      - key: SAT_SA_DEMO_MODE
+        value: "false"
+      - key: SAT_SA_AUTH_TOKENS
+        sync: false
+  - type: web
+    name: sat-sa-web
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./docker/web.Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/status
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: SAT_SA_API_HOSTPORT
+        fromService:
+          type: pserv
+          name: sat-sa-api
+          property: hostport
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"

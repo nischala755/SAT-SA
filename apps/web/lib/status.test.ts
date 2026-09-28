@@ -1,5 +1,6 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, it } from "vitest";
+import { backendBaseUrl } from "./backend-url";
 
 let server: Server | undefined;
 afterEach(() => { server?.closeAllConnections(); server?.close(); });
@@ -22,6 +23,11 @@ async function implementation() {
 const healthy = { status: "ok", service: "sat-sa-api", software_version: "0.1.0", demo_mode: true, storage_ready: true, registered_datasets: 1, message: "Local metadata storage ready" };
 
 describe("backend health boundary", () => {
+  it("resolves a private service host and port without changing local defaults", () => {
+    expect(backendBaseUrl({})).toBe("http://127.0.0.1:8000");
+    expect(backendBaseUrl({ SAT_SA_API_HOSTPORT: "sat-sa-api.internal:8000" })).toBe("http://sat-sa-api.internal:8000");
+    expect(backendBaseUrl({ SAT_SA_API_URL: "http://api:8000", SAT_SA_API_HOSTPORT: "ignored:8000" })).toBe("http://api:8000");
+  });
   it("reads actual healthy status", async () => {
     const { fetchStatus } = await implementation();
     expect(await fetchStatus(await endpoint(200, healthy))).toEqual({ ok: true, health: healthy });

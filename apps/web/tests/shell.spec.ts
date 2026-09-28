@@ -26,3 +26,16 @@ test("backend failure is visible and retry recovers", async ({ page }) => {
   await page.getByRole("button", { name: "Retry connection" }).click();
   await expect(page.getByText("Backend connected", { exact: true })).toBeVisible();
 });
+
+test("configured identity entry is visible when demo identity is disabled", async ({ page }) => {
+  await page.route("**/api/status", async route => {
+    const response = await route.fetch();
+    const result = await response.json();
+    result.health.demo_mode = false;
+    await route.fulfill({ response, json: result });
+  });
+  await page.route("**/api/service/identity", route => route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ detail: "Valid configured bearer identity required" }) }));
+  await page.goto("/");
+  await expect(page.getByText("Backend connected", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Bearer token")).toBeVisible();
+});

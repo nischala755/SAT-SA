@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { backendBaseUrl } from '../../../../lib/backend-url';
 
 async function proxy(request: NextRequest, context: {params: Promise<{path:string[]}>}) {
   const {path}=await context.params;
   if (!path.length || path.some(p=>! /^[A-Za-z0-9_.:-]+$/.test(p) || p==='..')) return NextResponse.json({detail:'Invalid path'},{status:400});
-  const base=process.env.SAT_SA_API_URL??'http://127.0.0.1:8000';
+  const base=backendBaseUrl(process.env);
   try {
     const body=request.method==='POST'?await request.text():undefined;
     if (body && new TextEncoder().encode(body).length>24000000) return NextResponse.json({detail:'Request exceeds 24 MB'},{status:413});

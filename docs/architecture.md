@@ -1,5 +1,9 @@
 # SAT-SA architecture proposal
 
+## Optional cloud demonstration addendum — 2026-09-28
+
+The user subsequently requested deployment to Render or Cloudflare. The default, verified local deployment and its offline operation remain intact. For a synthetic-only, token-gated cloud demonstration, `render.yaml` retains the approved Next.js/FastAPI split and the single-owner DuckDB/Parquet data layer: a public web service proxies to a private API service with a persistent disk. Cloud hosting is an explicit exception to the original no-cloud operating constraint; it is not required by the product or analytics. The prototype is not accredited for restricted SOC submissions. Cloudflare Workers are not a drop-in target for the current file-backed persistence; that option would require a separately documented architecture migration. See [Render deployment](render-deployment.md) for provisioning status and limits.
+
 ## Authorized completion addendum — 2026-09-27
 
 The user has authorized phases 2–10 and the local summary design. Optional AI summaries are isolated CLI operations, not analytics, scores or decisions. Qwen runs through loopback Ollama. The user additionally requested an optional Mistral provider: it requires explicit cloud consent and an environment credential, and sends only the selected evidence. This is a documented exception to the earlier blanket prohibition on external calls; default application operation remains fully local and independent of AI. No key is committed. Summary drafts require human source verification. The historical Phase 1 authorization below is superseded by this addendum.
