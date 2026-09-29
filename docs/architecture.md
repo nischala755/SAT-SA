@@ -2,7 +2,7 @@
 
 ## Cloudflare demonstration addendum — 2026-09-29
 
-At the user's request, a separate Cloudflare Tunnel configuration exposes the existing web container for a synthetic-only demonstration. The Python API and persistent DuckDB/Parquet data remain on the same local Docker host; the tunnel connector and Cloudflare are not used by the default offline deployment. The cloud mode requires a configured bearer identity. A temporary Quick Tunnel has been verified, while a stable named tunnel requires a Cloudflare domain, Access policy and tunnel token that are not available in the workspace. This is an explicit cloud exception, not a migration of the approved core architecture to Workers or Containers. See [Cloudflare deployment](cloudflare-deployment.md) and [verification](cloudflare-verification.md).
+At the user's request, a separate Cloudflare Tunnel configuration exposes the existing web container for a synthetic-only demonstration. The Python API and persistent DuckDB/Parquet data remain on the same Docker host; the tunnel connector and Cloudflare are not used by the default offline deployment. The cloud mode requires a configured bearer identity. A temporary Quick Tunnel has been verified. A stable named tunnel on an always-on VPS has a tested Compose profile, but requires a Cloudflare domain, Access policy, tunnel token and server that are not available in the workspace. This is an explicit cloud exception, not a migration of the approved core architecture to Workers or Containers. See [Cloudflare deployment](cloudflare-deployment.md) and [verification](cloudflare-verification.md).
 
 ## Period comparison and examiner report addendum — 2026-09-29
 

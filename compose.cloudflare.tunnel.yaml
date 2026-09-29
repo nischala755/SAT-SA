@@ -2,7 +2,8 @@
 # hostname in Cloudflare before starting this service.
 services:
   tunnel:
-    image: cloudflare/cloudflared:latest
+    # Reviewed connector image (cloudflared 2026.9.3); update deliberately.
+    image: cloudflare/cloudflared@sha256:072c067d25ccbe61d46e18f0d0723255f2bb5304f7317caa95b27031520ff92c
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?Set tunnel token in .env.cloudflare.local}

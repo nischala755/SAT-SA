@@ -2,6 +2,8 @@
 
 **Status:** Temporary Quick Tunnel working. Stable named tunnel and Access policy unverified because no Cloudflare account/domain/token is available in this workspace. The tunnel depends on this Docker host and Internet access; it does not replace the verified offline deployment.
 
+The separate always-on VPS profile (`compose.cloudflare.prod.yaml`) has been checked locally with a placeholder tunnel token: API, web and tunnel each resolve to `restart: unless-stopped`; the named connector uses the pinned cloudflared 2026.9.3 image digest; API/web ports remain on `127.0.0.1`; and the API still mounts the persistent `sat-sa-data` volume. A Linux container executed the credential generator and confirmed owner-only `0600` file permissions. This is configuration validation only. No VPS provisioning, Cloudflare Access policy, named hostname, reboot persistence or backup restore has been observed.
+
 | Command | Exit | Observed result |
 | --- | ---: | --- |
 | `.venv\Scripts\python.exe scripts/prepare_cloudflare_demo.py` | 0 | Created Git-ignored `.env.cloudflare.local` with a new administrator bearer identity; secret was not printed. |

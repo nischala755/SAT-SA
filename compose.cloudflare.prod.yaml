@@ -1,0 +1,17 @@
+# Add to the base, auth and named-tunnel files on an always-on Docker host.
+# The base named volume keeps DuckDB/Parquet data across container restarts.
+x-bounded-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+services:
+  api:
+    restart: unless-stopped
+    logging: *bounded-logging
+  web:
+    restart: unless-stopped
+    logging: *bounded-logging
+  tunnel:
+    restart: unless-stopped
+    logging: *bounded-logging
