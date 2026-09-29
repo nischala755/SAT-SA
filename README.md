@@ -8,6 +8,8 @@
 
 **Smart India Hackathon packet:** [49-second demo](docs/submission/demo-walkthrough.mp4) · [five-slide presentation](docs/submission/technical-presentation.pdf) · [two-page architecture](docs/submission/architecture-2p.pdf) · [sample examiner report](docs/submission/sample-supervisory-report.pdf) · [objective map and expert-validation gate](docs/submission/README.md) · [latest verification](docs/submission/verification.md). The earlier completion report remains a historical snapshot; use the submission verification for this revision.
 
+**Cloudflare demo:** a [temporary HTTPS tunnel is verified](docs/cloudflare-verification.md). Follow the [Cloudflare deployment guide](docs/cloudflare-deployment.md) for the authenticated local setup and the remaining steps to attach a stable hostname under your Cloudflare account. The offline Compose path above remains the authoritative deployment for restricted environments.
+
 <details>
 <summary><strong>Choose a path</strong></summary>
 

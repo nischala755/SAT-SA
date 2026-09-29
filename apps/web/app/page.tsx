@@ -30,7 +30,7 @@ export default function Home() {
         <div aria-live="polite" aria-busy={checking}>
           {checking ? <p>Checking backend and local storage…</p> : result?.ok ? <>
             <p className="connected">Backend connected</p>
-            <dl><div><dt>Storage</dt><dd>{result.health.message}</dd></div><div><dt>Registered datasets</dt><dd>{result.health.registered_datasets}</dd></div><div><dt>API version</dt><dd>{result.health.software_version}</dd></div><div><dt>Environment</dt><dd>{result.health.demo_mode ? "Synthetic demo only" : "Non-demo"}</dd></div></dl>
+            <dl><div><dt>Storage</dt><dd>{result.health.message}</dd></div><div><dt>Registered datasets</dt><dd>{result.health.registered_datasets}</dd></div><div><dt>API version</dt><dd>{result.health.software_version}</dd></div><div><dt>Environment</dt><dd>{result.health.demo_mode ? "Synthetic demo only" : "Configured identity"}</dd></div></dl>
           </> : <p role="alert" className="error">{result?.message ?? "Backend unavailable."}</p>}
         </div>
       </section>

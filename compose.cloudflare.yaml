@@ -1,0 +1,7 @@
+# Synthetic-only Cloudflare exposure. Use with compose.yaml and an ignored
+# .env.cloudflare.local created by scripts/prepare_cloudflare_demo.py.
+services:
+  api:
+    environment:
+      SAT_SA_DEMO_MODE: "false"
+      SAT_SA_AUTH_TOKENS: ${SAT_SA_AUTH_TOKENS:?Run scripts/prepare_cloudflare_demo.py first}

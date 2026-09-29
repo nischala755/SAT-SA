@@ -1,0 +1,14 @@
+# Temporary test URL only. Cloudflare assigns a new random hostname when the
+# connector restarts. Use compose.cloudflare.tunnel.yaml for a named tunnel.
+services:
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://web:3000
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [local]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]

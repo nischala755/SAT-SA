@@ -1,5 +1,9 @@
 # SAT-SA architecture proposal
 
+## Cloudflare demonstration addendum — 2026-09-29
+
+At the user's request, a separate Cloudflare Tunnel configuration exposes the existing web container for a synthetic-only demonstration. The Python API and persistent DuckDB/Parquet data remain on the same local Docker host; the tunnel connector and Cloudflare are not used by the default offline deployment. The cloud mode requires a configured bearer identity. A temporary Quick Tunnel has been verified, while a stable named tunnel requires a Cloudflare domain, Access policy and tunnel token that are not available in the workspace. This is an explicit cloud exception, not a migration of the approved core architecture to Workers or Containers. See [Cloudflare deployment](cloudflare-deployment.md) and [verification](cloudflare-verification.md).
+
 ## Period comparison and examiner report addendum — 2026-09-29
 
 The approved immutable dataset and run model supports an additional read-only cross-run comparison. The API retrieves two stored completed runs, rejects overlap or reversed chronology, and compares the same entity only when ID, submitted name, sector and declared peer group still match. Alert and case volumes are normalized to 30-day rates using each submitted assessment period. A changed rate is descriptive evidence for examination, not a control-effectiveness judgment. Missing entities or changed identities/cohorts produce explicit unavailable reasons. This does not alter the analytical signal engine or introduce a new store.
