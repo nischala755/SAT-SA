@@ -1,0 +1,28 @@
+# Optional public synthetic demo on a free personal Tailscale tailnet.
+# Authentication and Funnel activation require an interactive Tailscale login.
+services:
+  api:
+    restart: unless-stopped
+  web:
+    restart: unless-stopped
+  tailscale:
+    image: tailscale/tailscale:stable
+    hostname: sat-sa-demo
+    environment:
+      TS_HOSTNAME: sat-sa-demo
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_AUTH_ONCE: "true"
+      TS_USERSPACE: "true"
+    volumes:
+      - sat-sa-tailscale-state:/var/lib/tailscale
+    depends_on:
+      web:
+        condition: service_healthy
+    networks: [local]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+volumes:
+  sat-sa-tailscale-state:

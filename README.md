@@ -1,8 +1,8 @@
 # SAT-SA · Supervisory Analytics Tool for SOC Assessment
 
-**An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/VISTA).
+**An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/ViSTa).
 
-[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Compare periods](#compare-two-assessment-periods) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
+[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Compare periods](#compare-two-assessment-periods) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Free public demo](#free-public-demo) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
 
 > **Status:** The full **prototype** workflow is implemented and tested. It is not accredited for restricted submissions or benchmarked for million-record operation. See the [current verification report](docs/completion-verification.md) for exact commands, results, deviations, and open limits. The [Phase 1 report](docs/phase-1-verification.md) is a historical foundation snapshot.
 
@@ -20,7 +20,8 @@
 | Understand a signal or priority | [Analytical interpretation](#analytical-interpretation) and [methodology](docs/analytics-methodology.md) |
 | Develop or test locally | [Developer setup](#developer-setup) and [verification](#verification-and-tested-results) |
 | Prepare disconnected deployment | [Offline operation](#security-offline-operation-and-limits) and [deployment notes](docs/deployment.md) |
-| Prepare a cloud-hosted synthetic demo | [Render cloud deployment](#render-cloud-deployment) |
+| Publish a free synthetic demo from this computer | [Free public demo](#free-public-demo) |
+| Prepare a paid cloud-hosted synthetic demo | [Render cloud deployment](#render-cloud-deployment) |
 | Inspect optional evidence drafts | [Qwen and Mistral](#optional-evidence-summary-drafting) |
 
 This README uses GitHub-native links, tables, Mermaid diagrams, and expandable sections. Nothing in the guide loads a remote widget or needs JavaScript beyond GitHub's own renderer.
@@ -64,7 +65,7 @@ The default demonstration contains eight pseudonymous CSEs across energy and fin
 Install Git and Docker with Compose. The first image build needs access to prepared base images and dependency packages; subsequent **runtime** operation can be disconnected.
 
 ```powershell
-git clone https://github.com/nischala755/VISTA.git
+git clone https://github.com/nischala755/ViSTa.git
 cd VISTA
 docker compose up --build --wait
 docker compose ps
@@ -206,6 +207,10 @@ The source hierarchy is the [problem statement](docs/problem-statement.md), [app
 The eight families cover detection, investigation, escalation, incident response, security operations, governance, operational discipline, and cyber resilience. Rules include fast closure, weak investigation evidence, absent expected escalation evidence, recurring activity, long-running cases, workload concentration, missing fields, closure bursts, monitoring/category gaps, low activity against matched peers, peer closure deviation, and a bounded metric-integrity combination. A signal presents an observable predicate and review hypothesis, **not** a finding of non-compliance.
 
 Peers match sector, peer group, criticality, entity size, and assessment window, exclude the subject, and require a minimum cohort. Within-period history is a split of the submitted period, not a separate prior-period submission. Missing inventory suppresses coverage analysis. Confidence depends on the relevant sample and field completeness; it is not a calibrated probability. Review priority adds documented severity, corroboration, sufficiency, recurrence, and peer-deviation contributions. Novelty currently contributes zero because prior-run comparison is unavailable. Exact rules, defaults and limitations are in the [analytics methodology](docs/analytics-methodology.md).
+
+## Free public demo
+
+The [Tailscale Funnel guide](docs/free-public-demo.md) uses the existing Docker app and persistent local volume with a free Personal tailnet and a stable HTTPS address. The computer, Docker Desktop, and Internet connection must be running whenever the public demo is needed. This is for synthetic data only; the offline local deployment does not depend on Tailscale. The Tailscale route is pending account authorization and public-endpoint verification.
 
 ## Render cloud deployment
 
