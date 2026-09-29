@@ -19,7 +19,7 @@ Render currently lists the selected compute sizes at **$25/month** (API) and **$
 
 ## Create the services
 
-1. Sign in to Render and connect the GitHub repository `https://github.com/nischala755/VISTA` to the intended workspace. Select **New → Blueprint** and use the repository's root `render.yaml` on branch `main`. Inspect the two services, region, plans and disk before syncing.
+1. Sign in to Render and connect the GitHub repository `https://github.com/nischala755/ViSTa` to the intended workspace. Select **New > Blueprint** and use the repository's root `render.yaml` on branch `phase-1` (the current default branch). Inspect the two services, region, plans and disk before syncing.
 2. During Blueprint creation, set the prompted `SAT_SA_AUTH_TOKENS` secret on **`sat-sa-api`**. It must be a JSON map from a newly generated, high-entropy bearer token to a server-owned actor and role. Example shape (the example token is deliberately unusable):
 
    ```json
