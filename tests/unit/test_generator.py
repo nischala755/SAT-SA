@@ -100,6 +100,15 @@ def test_generator_refuses_labels_inside_evidence(tmp_path):
         make(1, tmp_path / "demo", tmp_path / "demo/labels")
 
 
+def test_generator_can_create_a_distinct_earlier_assessment(tmp_path):
+    from sat_sa.synthetic.generator import build_records
+    older, _ = build_records(7, assessment_year=2024)
+    current, _ = build_records(7)
+    assert older['cses'][0].assessment_period.end <= current['cses'][0].assessment_period.start
+    assert older['alerts'][0].timestamp.year == 2024
+    assert current['alerts'][0].timestamp.year == 2025
+
+
 def test_generator_never_overwrites(generated):
     root, *_ = generated
     before = hashes(root / "a")

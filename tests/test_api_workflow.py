@@ -18,6 +18,11 @@ def test_real_run_review_audit_and_reader(tmp_path):
             time.sleep(.05)
         assert job['status']=='completed',job
         run=job['run_id']
+        report=client.get('/api/v1/reports/'+run)
+        assert report.status_code==200
+        assert report.json()['run']['run_id']==run
+        assert report.json()['status']=='requires_human_review'
+        assert client.get('/api/v1/period-comparison',params={'baseline_run_id':run,'current_run_id':run}).status_code==422
         signals=client.get('/api/v1/signals',params={'run_id':run}).json()
         assert signals['total']>0
         signal=signals['items'][0]

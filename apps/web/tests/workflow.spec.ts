@@ -45,3 +45,16 @@ test('CSV/JSON wizard previews and imports an immutable submission',async({page}
   await page.getByRole('button',{name:'Import immutable dataset'}).click();
   await expect(page.getByText('ingestion job: completed',{exact:false})).toBeVisible({timeout:15000});
 });
+
+test('selected run produces an evidence-backed printable report',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByRole('button',{name:'Assess CSE-01'})).toBeVisible({timeout:60000});
+  await page.getByRole('button',{name:'Report',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Supervisory assessment report'})).toBeVisible();
+  await expect(page.getByText('Analytical indicators are review prompts',{exact:false})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Review indicators and source references'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Print or save as PDF'})).toBeVisible();
+  await page.emulateMedia({media:'print'});
+  await expect(page.getByRole('heading',{name:'System status'})).toBeHidden();
+  await expect(page.getByRole('heading',{name:'Supervisory assessment report'})).toBeVisible();
+});

@@ -1,5 +1,11 @@
 # SAT-SA architecture proposal
 
+## Period comparison and examiner report addendum — 2026-09-29
+
+The approved immutable dataset and run model supports an additional read-only cross-run comparison. The API retrieves two stored completed runs, rejects overlap or reversed chronology, and compares the same entity only when ID, submitted name, sector and declared peer group still match. Alert and case volumes are normalized to 30-day rates using each submitted assessment period. A changed rate is descriptive evidence for examination, not a control-effectiveness judgment. Missing entities or changed identities/cohorts produce explicit unavailable reasons. This does not alter the analytical signal engine or introduce a new store.
+
+A bounded examiner report assembles the selected run's overview, entities, indicators, sampled source references, unavailable analyses, suggested samples, and recorded human decisions. The browser offers print-to-PDF and JSON download from this real report object. Report truncation is explicit; full evidence remains available through paginated endpoints. The default local path remains independent of AI and Internet services.
+
 ## Optional cloud demonstration addendum — 2026-09-28
 
 The user subsequently requested deployment to Render or Cloudflare. The default, verified local deployment and its offline operation remain intact. For a synthetic-only, token-gated cloud demonstration, `render.yaml` retains the approved Next.js/FastAPI split and the single-owner DuckDB/Parquet data layer: a public web service proxies to a private API service with a persistent disk. Cloud hosting is an explicit exception to the original no-cloud operating constraint; it is not required by the product or analytics. The prototype is not accredited for restricted SOC submissions. Cloudflare Workers are not a drop-in target for the current file-backed persistence; that option would require a separately documented architecture migration. See [Render deployment](render-deployment.md) for provisioning status and limits.

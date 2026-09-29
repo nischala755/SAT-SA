@@ -9,6 +9,8 @@ from sat_sa.ingestion.service import preview_submission
 from sat_sa.ingestion.internal import fetch_export
 from sat_sa.repositories.parquet_evidence import ParquetEvidenceRepository
 from sat_sa.risk.overview import summarize
+from sat_sa.risk.period_comparison import compare_runs
+from sat_sa.risk.report import build_report
 
 def router(settings):
     api=APIRouter(prefix='/api/v1')
@@ -36,6 +38,17 @@ def router(settings):
     @api.get('/overview')
     def overview(request:Request,run_id:str|None=None,sector:str|None=None,person=Depends(identity)):
         return summarize(result(request,run_id),sector)
+
+    @api.get('/period-comparison')
+    def period_comparison(request:Request,baseline_run_id:str,current_run_id:str,person=Depends(identity)):
+        try: return compare_runs(result(request,baseline_run_id),result(request,current_run_id))
+        except ValueError as exc: raise HTTPException(422,str(exc)) from None
+
+    @api.get('/reports/{run_id}')
+    def supervisory_report(run_id:str,request:Request,person=Depends(identity)):
+        data=result(request,run_id)
+        decisions=request.app.state.repository.decisions(run_id=run_id)
+        return build_report(data,decisions)
 
     @api.get('/datasets',response_model=PageResult)
     def datasets(request:Request,p=Depends(bounds),person=Depends(identity)): return page(request.app.state.repository.datasets(),*p)

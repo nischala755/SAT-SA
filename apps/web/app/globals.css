@@ -56,4 +56,7 @@ body main { margin-top:20px; }
 .panel dl div { display:block;min-width:150px;padding:2px 0;font-size:12px; }
 .panel .connected { margin-bottom:6px;font-size:13px; }
 .workbench { margin-top:18px; }
+.report-signal { border-top:1px solid #d6dfe8; padding:10px 0; break-inside:avoid; }
+.report-signal h4 { margin:0 0 5px; }
+@media print { header,footer,main>.eyebrow,main>h2,main>.intro,main>.panel,main>.notice,.workbench>.workspace-title,.workbench>.notice,.workbench>details,.workbench>.toolbar,.workbench>.run-context,.workbench>nav,.report-actions { display:none!important; } body,main,.workbench { background:white!important; margin:0!important; padding:0!important; border:0!important; max-width:none!important; } .print-report { font-size:10pt; } .print-report h2 { font-size:17pt; } .print-report table { font-size:8pt; } .print-report .table-scroll { overflow:visible; } }
 @media (max-width: 600px) { header { align-items: flex-start; flex-direction: column; } main { margin-top: 25px; } dl div { grid-template-columns: 1fr; gap: 2px; } }

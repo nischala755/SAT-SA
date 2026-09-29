@@ -2,8 +2,10 @@
 import {useCallback,useEffect,useState,useRef} from 'react';
 import {api,display,Page,Row} from '../../lib/workbench';
 import {Ingestion} from './ingestion';
+import {PeriodComparison} from './period-comparison';
+import {SupervisoryReport} from './supervisory-report';
 
-const views=['Overview','Entities','Review queue','Signals','Negative space','Data ingestion','Validation','Audit trail'] as const;
+const views=['Overview','Entities','Review queue','Signals','Negative space','Period comparison','Report','Data ingestion','Validation','Audit trail'] as const;
 const categories=['detection','investigation','escalation','incident_response','security_operations','governance','operational_discipline','cyber_resilience'];
 function Grid({rows,columns,action}:{rows:Row[];columns:string[];action?:(r:Row)=>React.ReactNode}) {
  return <div className="table-scroll"><table><thead><tr>{columns.map(k=><th key={k}>{k.replaceAll('_',' ')}</th>)}{action&&<th>Examine</th>}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{columns.map(k=><td key={k}>{display(r[k])}</td>)}{action&&<td>{action(r)}</td>}</tr>)}</tbody></table>{!rows.length&&<p>No records match this selection.</p>}</div>;
@@ -24,7 +26,7 @@ export default function Workbench({authRequired=false}:{authRequired?:boolean}){
    const sequence=++loadSequence.current;
    setError('');setBusy(true);setItems([]);setValidation(null);setProfile(null);
    try{
-     if(view==='Data ingestion')return;
+     if(['Data ingestion','Period comparison','Report'].includes(view))return;
      const query=new URLSearchParams({limit:'25',offset:String(offset)});if(run)query.set('run_id',run);
      if(entity&&['Signals','Negative space','Review queue'].includes(view))query.set('cse_id',entity);
      if(category&&view==='Signals')query.set('category',category);
@@ -59,7 +61,7 @@ export default function Workbench({authRequired=false}:{authRequired?:boolean}){
   {job&&<p role="status">{display(job.kind)} job: {display(job.status)} {job.error?display(job.error):''}</p>}
   <nav aria-label="Assessment views">{views.map(v=><button key={v} aria-current={view===v?'page':undefined} onClick={()=>navigate(v)}>{v}</button>)}</nav>
   {error&&<p role="alert" className="error">{error}</p>}{busy&&<p role="status">Loading evidence-backed results…</p>}
-  {view==='Data ingestion'?<Ingestion token={token} onJob={setJob}/>:<>
+  {view==='Data ingestion'?<Ingestion token={token} onJob={setJob}/>:view==='Period comparison'?<PeriodComparison runs={runs} run={run} token={token}/>:view==='Report'?<SupervisoryReport run={run} token={token}/>:<>
   <h2>{view==='Overview'?'Supervisory overview':view==='Entity'?`Entity assessment: ${entity}`:view}</h2>
   {['Overview','Entities'].includes(view)&&<label>Sector filter <input value={sector} placeholder="All sectors; enter an exact sector name" onChange={e=>{setSector(e.target.value);setOffset(0);}}/></label>}
   {['Signals','Review queue','Negative space'].includes(view)&&<div className="toolbar"><label>CSE filter <input value={entity} placeholder="All entities" onChange={e=>{setEntity(e.target.value);setOffset(0);}}/></label>{view==='Signals'&&<><label>Signal family <select value={category} onChange={e=>{setCategory(e.target.value);setOffset(0);}}><option value="">All families</option>{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Severity <select value={severity} onChange={e=>setSeverity(e.target.value)}><option value="">All severities</option><option>high</option><option>medium</option></select></label></>}</div>}

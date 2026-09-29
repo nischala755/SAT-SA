@@ -9,6 +9,7 @@ COPY apps/api apps/api
 COPY analytics analytics
 COPY packages/analytics-contracts packages/analytics-contracts
 COPY config config
+COPY scripts/generate_demo.py scripts/generate_demo.py
 RUN groupadd --gid 10001 satsa && useradd --uid 10001 --gid satsa --no-create-home satsa \
     && mkdir -p /var/lib/sat-sa && chown satsa:satsa /var/lib/sat-sa
 USER 10001:10001

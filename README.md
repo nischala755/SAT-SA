@@ -2,9 +2,11 @@
 
 **An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/VISTA).
 
-[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
+[Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Compare periods](#compare-two-assessment-periods) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
 
 > **Status:** The full **prototype** workflow is implemented and tested. It is not accredited for restricted submissions or benchmarked for million-record operation. See the [current verification report](docs/completion-verification.md) for exact commands, results, deviations, and open limits. The [Phase 1 report](docs/phase-1-verification.md) is a historical foundation snapshot.
+
+**Smart India Hackathon packet:** [49-second demo](docs/submission/demo-walkthrough.mp4) · [five-slide presentation](docs/submission/technical-presentation.pdf) · [two-page architecture](docs/submission/architecture-2p.pdf) · [sample examiner report](docs/submission/sample-supervisory-report.pdf) · [objective map and expert-validation gate](docs/submission/README.md) · [latest verification](docs/submission/verification.md). The earlier completion report remains a historical snapshot; use the submission verification for this revision.
 
 <details>
 <summary><strong>Choose a path</strong></summary>
@@ -36,6 +38,22 @@ flowchart LR
 ```
 
 SAT-SA imports CSV/JSON evidence, preserves an immutable dataset version, calculates deterministic indicators across eight supervisory families, and links each indicator to source records. The examiner sees the observation, rule, thresholds, completeness, peer or within-period context, and a **hypothesis to investigate**. Only a human records an outcome. The analytical engine never reads the separate synthetic ground-truth labels and never calls an AI provider.
+
+The **Period comparison** view compares two completed, non-overlapping assessment runs using 30-day alert and case rates. It marks absent entities, changed names or changed cohorts as unavailable. The **Report** view assembles the selected run's actual indicators, evidence references, limitations and human decisions; use **Print or save as PDF** or download the underlying JSON. Neither view creates a supervisory finding automatically.
+
+## Compare two assessment periods
+
+The default demo has one period. To create an earlier, immutable synthetic submission in the same Compose volume, stop the API writer, generate and register the 2024 evidence, then restart. This operation uses the same seeded generator with different assessment dates; it does not copy or fabricate analytics results.
+
+```powershell
+docker compose stop api
+docker compose run --rm --no-deps api python scripts/generate_demo.py --seed 20260927 --assessment-year 2024 --output /var/lib/sat-sa/evidence/demo-2024 --labels-output /var/lib/sat-sa/ground_truth/demo-2024 --register /var/lib/sat-sa/metadata.duckdb
+docker compose start --wait api
+```
+
+In the workspace, select `demo-2024` and **Run analytics**. Select `demo` and its completed run, open **Period comparison**, choose the 2024 run as the baseline, and select **Compare periods**. The two runs retain their own dataset hashes. Rates account for the 2024 leap year. The seeded scenarios recur across years, so this is a workflow demonstration, not evidence of an actual improvement or deterioration. The separately stored ground-truth labels are never exposed through normal evidence APIs.
+
+Open **Report** for either run to print a supervisory handout. It contains at most 50 indicators, 10 sample references per indicator, and 20 suggested samples; the view states those limits and the normal signal/evidence APIs support complete drill-down.
 
 The default demonstration contains eight pseudonymous CSEs across energy and financial-services cohorts, 12 months of 2025 evidence, 192 assets, 6,816 alerts, 852 cases, 3,322 investigation events, and 2,696 escalation records. Its 25 current entity-level review indicators are calculated from that data, not embedded as dashboard fixtures.
 

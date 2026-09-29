@@ -11,12 +11,12 @@ from sat_sa_contracts.models import (
 from sat_sa.repositories.parquet_evidence import ParquetEvidenceRepository, canonical_json
 from .scenarios import SCENARIOS
 
-PERIOD = AssessmentPeriod(start="2025-01-01T00:00:00Z", end="2026-01-01T00:00:00Z")
-
-
-def build_records(seed: int):
+def build_records(seed: int, assessment_year: int = 2025):
     if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
         raise ValueError("Seed must be a nonnegative integer")
+    if isinstance(assessment_year, bool) or not isinstance(assessment_year, int) or not 2000 <= assessment_year <= 2100:
+        raise ValueError("Assessment year must be between 2000 and 2100")
+    period = AssessmentPeriod(start=datetime(assessment_year, 1, 1, tzinfo=timezone.utc), end=datetime(assessment_year + 1, 1, 1, tzinfo=timezone.utc))
     rng = random.Random(seed)
     records = {kind: [] for kind in RECORD_MODELS}
     labels = {}
@@ -31,7 +31,7 @@ def build_records(seed: int):
     for entity_number in range(1, 9):
         entity = f"CSE-{entity_number:02d}"
         sector = "energy" if entity_number <= 4 else "financial_services"
-        records["cses"].append(CSE(cse_id=entity, name=f"Synthetic {sector.replace('_', ' ').title()} Entity {entity_number:02d}", sector=sector, peer_group=f"{sector}-medium-critical", criticality="critical", assessment_period=PERIOD, provenance=provenance("cses", entity)))
+        records["cses"].append(CSE(cse_id=entity, name=f"Synthetic {sector.replace('_', ' ').title()} Entity {entity_number:02d}", sector=sector, peer_group=f"{sector}-medium-critical", criticality="critical", assessment_period=period, provenance=provenance("cses", entity)))
         for i in range(24):
             asset_id = f"AS-{i:03d}"  # Deliberately entity-local IDs exercise composite keys.
             criticality = "critical" if i < 8 else "medium"
@@ -45,7 +45,7 @@ def build_records(seed: int):
             for j in range(count):
                 case_id = f"C-{month:02d}-{j:03d}"
                 severity = rng.choices(["critical", "high", "medium", "low"], [15, 25, 40, 20])[0]
-                opened = datetime(2025, month, 2 + j * 2, rng.randrange(6, 20), rng.randrange(60), tzinfo=timezone.utc)
+                opened = datetime(assessment_year, month, 2 + j * 2, rng.randrange(6, 20), rng.randrange(60), tzinfo=timezone.utc)
                 duration = rng.randrange(60, 181)
                 steps = rng.randrange(3, 7)
                 reason = rng.choice(["Reviewed correlated evidence and resolved", "Documented benign activity verified", "Remediation completed and verified", "Root cause addressed; follow-up recorded"])
@@ -61,7 +61,7 @@ def build_records(seed: int):
                 if template:
                     steps, reason = 1, "Standard review completed"
                 if burst:
-                    closed = datetime(2025, month, 28, 18, tzinfo=timezone.utc)
+                    closed = datetime(assessment_year, month, 28, 18, tzinfo=timezone.utc)
                     opened = closed - timedelta(minutes=duration)
                 if deviation:
                     duration = rng.randrange(720, 1441)
@@ -92,14 +92,14 @@ def build_records(seed: int):
     return records, [labels[key] for key in sorted(labels)]
 
 
-def generate_dataset(seed: int, output: Path, labels_output: Path):
+def generate_dataset(seed: int, output: Path, labels_output: Path, assessment_year: int = 2025):
     output, labels_output = Path(output).resolve(), Path(labels_output).resolve()
     # Sibling trees are required; both nesting directions would leak labels.
     if output == labels_output or output in labels_output.parents or labels_output in output.parents:
         raise ValueError("Ground-truth labels must be in a separate tree")
     if output.exists() or labels_output.exists():
         raise FileExistsError("Synthetic evidence and labels are immutable")
-    records, labels = build_records(seed)
+    records, labels = build_records(seed, assessment_year)
     # Prepare labels before publishing evidence so invalid/unwritable label paths
     # cannot leave a completed evidence version from a failed generation.
     labels_output.parent.mkdir(parents=True, exist_ok=True)
