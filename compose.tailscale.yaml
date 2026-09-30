@@ -8,11 +8,10 @@ services:
   tailscale:
     image: tailscale/tailscale:stable
     hostname: sat-sa-demo
-    environment:
-      TS_HOSTNAME: sat-sa-demo
-      TS_STATE_DIR: /var/lib/tailscale
-      TS_AUTH_ONCE: "true"
-      TS_USERSPACE: "true"
+    # Keep tailscaled alive during interactive login; containerboot otherwise
+    # exits and rotates the one-time URL before a user can approve the device.
+    entrypoint: [tailscaled]
+    command: ["--tun=userspace-networking", "--statedir=/var/lib/tailscale", "--socket=/tmp/tailscaled.sock"]
     volumes:
       - sat-sa-tailscale-state:/var/lib/tailscale
     depends_on:

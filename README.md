@@ -210,7 +210,7 @@ Peers match sector, peer group, criticality, entity size, and assessment window,
 
 ## Free public demo
 
-The [Tailscale Funnel guide](docs/free-public-demo.md) uses the existing Docker app and persistent local volume with a free Personal tailnet and a stable HTTPS address. The computer, Docker Desktop, and Internet connection must be running whenever the public demo is needed. This is for synthetic data only; the offline local deployment does not depend on Tailscale. The Tailscale route is pending account authorization and public-endpoint verification.
+The [Tailscale Funnel guide](docs/free-public-demo.md) uses the existing Docker app and persistent local volume with a free Personal tailnet and a stable HTTPS address. The computer, Docker Desktop, and Internet connection must be running whenever the public demo is needed. This is for synthetic data only; the offline local deployment does not depend on Tailscale. The public Tailscale Funnel address is [verified](docs/tailscale-verification.md) at https://sat-sa-demo.tail2e8b39.ts.net/ while this host is running.
 
 ## Render cloud deployment
 
