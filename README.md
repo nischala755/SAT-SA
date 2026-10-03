@@ -1,6 +1,6 @@
 # SAT-SA · Supervisory Analytics Tool for SOC Assessment
 
-**An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The repository is hosted as [VISTA](https://github.com/nischala755/ViSTa).
+**An evidence-led, local supervisory prototype for examining periodic SOC submissions.** SAT-SA helps an NCIIPC supervisor choose entities and source records for human examination. It is not a SIEM, an automated compliance decision maker, or an AI chatbot. The source repository is [SAT-SA](https://github.com/nischala755/SAT-SA).
 
 [Run the demo](#run-the-demo) · [Guided walkthrough](#guided-supervisory-walkthrough) · [Compare periods](#compare-two-assessment-periods) · [Bring a submission](#bring-a-structured-submission) · [How it works](#how-the-system-works) · [Free public demo](#free-public-demo) · [Render deployment](#render-cloud-deployment) · [Developer setup](#developer-setup) · [Verification](#verification-and-tested-results) · [Limits](#security-offline-operation-and-limits)
 
@@ -65,8 +65,8 @@ The default demonstration contains eight pseudonymous CSEs across energy and fin
 Install Git and Docker with Compose. The first image build needs access to prepared base images and dependency packages; subsequent **runtime** operation can be disconnected.
 
 ```powershell
-git clone https://github.com/nischala755/ViSTa.git
-cd VISTA
+git clone https://github.com/nischala755/SAT-SA.git
+cd SAT-SA
 docker compose up --build --wait
 docker compose ps
 ```

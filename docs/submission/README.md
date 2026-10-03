@@ -1,6 +1,6 @@
 # Smart India Hackathon submission packet
 
-SAT-SA answers the NCIIPC supervisory assessment problem with a working, local, evidence-based prototype. Start with the [49-second walkthrough](demo-walkthrough.mp4), then inspect the [five-slide technical presentation](technical-presentation.pdf), [two-page architecture](architecture-2p.pdf), and [sample examiner report](sample-supervisory-report.pdf). The [repository README](../../README.md) has exact run and import steps. Editable HTML sources for the presentation PDFs and the [short demo narration](demo-script.md) and [2–3 minute narration](demo-script-2-3-min.md) and [2–2.5 minute narration](demo-script-2-5-min.md) are alongside the artifacts.
+SAT-SA answers the NCIIPC supervisory assessment problem with a working, local, evidence-based prototype. The [submission-ready project summary](project-summary.md) includes the live synthetic demo and local deployment checks. Start with the [49-second walkthrough](demo-walkthrough.mp4), then inspect the [five-slide technical presentation](technical-presentation.pdf), [two-page architecture](architecture-2p.pdf), and [sample examiner report](sample-supervisory-report.pdf). The [repository README](../../README.md) has exact run and import steps. Editable HTML sources for the presentation PDFs and the [short demo narration](demo-script.md) and [2–3 minute narration](demo-script-2-3-min.md) and [2–2.5 minute narration](demo-script-2-5-min.md) are alongside the artifacts.
 
 | Evaluation objective | Demonstrated path | Boundary |
 | --- | --- | --- |
