@@ -12,6 +12,7 @@ On the seeded synthetic dataset, the completed run covered **8 pseudonymous CSEs
 
 - **Source code:** https://github.com/nischala755/SAT-SA
 - **Live synthetic demo:** https://sat-sa-demo.tail2e8b39.ts.net/
+- **Demo QR code:** [PNG](live-demo-qr.png) · [SVG](live-demo-qr.svg)
 - **Demo caution:** The live address uses a free Tailscale Funnel from a local Windows computer. It is available only while that computer, Docker Desktop, and Internet connection are running. Use synthetic data only; do not upload restricted CSE evidence or treat the URL as a production/NCIIPC deployment.
 - **Video:** The repository contains a [49-second silent walkthrough](demo-walkthrough.mp4) and a [2–2.5 minute narration script](demo-script-2-5-min.md). No YouTube link has been provided or verified.
 
